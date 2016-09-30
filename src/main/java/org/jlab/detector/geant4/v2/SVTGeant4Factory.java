@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.jlab.detector.geant4.v2.SVT;
+package org.jlab.detector.geant4.v2;
 
 import org.jlab.detector.geant4.v2.Geant4Factory;
 import org.jlab.detector.volume.G4Box;
@@ -11,11 +11,7 @@ import org.jlab.detector.volume.G4World;
 
 /**
  *
-<<<<<<< HEAD:src/main/java/org/jlab/detector/geant4/v2/SVT/SVTGeant4Factory.java
- * @author gavalian, kenjo, davies
-=======
  * @author kenjo
->>>>>>> upstream/master:src/main/java/org/jlab/detector/geant4/v2/SVTGeant4Factory.java
  */
 public final class SVTGeant4Factory extends Geant4Factory {
 
