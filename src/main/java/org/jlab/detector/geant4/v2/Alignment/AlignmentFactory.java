@@ -3,16 +3,12 @@ package org.jlab.detector.geant4.v2.Alignment;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.jlab.geom.geant.Geant4Basic;
-//import org.jlab.geom.prim.Point3D;
-//import org.jlab.geom.prim.Triangle3D;
-//import org.jlab.geom.prim.Vector3D;
-import org.jlab.geom.prim.Vector3D;
-
-import eu.mihosoft.vrl.v3d.Vector3d;
-
 import org.jlab.detector.geant4.v2.Misc.Matrix;
 import org.jlab.detector.geant4.v2.Misc.Util;
+import org.jlab.detector.volume.Geant4Basic;
+import org.jlab.geometry.prim.Triangle3d;
+
+import eu.mihosoft.vrl.v3d.Vector3d;
 
 /**
  * <h1> Geometry Alignment </h1>
@@ -113,7 +109,7 @@ public class AlignmentFactory
 	 * @param dataMeasured second data set
 	 * @return double[][] alignment shifts relative to the first data set
 	 */
-	/*public static double[][] calcShifts( int dataLen, double[][] dataIdeal, double[][] dataMeasured )
+	public static double[][] calcShifts( int dataLen, double[][] dataIdeal, double[][] dataMeasured )
 	{
 		if( dataIdeal == null ){ throw new IllegalArgumentException("no data"); }
 		if( dataMeasured == null ){ throw new IllegalArgumentException("no data"); }
@@ -134,8 +130,8 @@ public class AlignmentFactory
 				fidDeltas[f] = fidMeasuredPos3Ds[f].minus( fidIdealPos3Ds[f] );
 			}
 
-			Triangle3D fidIdealTri3D = new Triangle3D( fidIdealPos3Ds[0], fidIdealPos3Ds[1], fidIdealPos3Ds[2] );
-			Triangle3D fidMeasuredTri3D = new Triangle3D( fidMeasuredPos3Ds[0], fidMeasuredPos3Ds[1], fidMeasuredPos3Ds[2] );
+			Triangle3d fidIdealTri3D = new Triangle3d( fidIdealPos3Ds[0], fidIdealPos3Ds[1], fidIdealPos3Ds[2] );
+			Triangle3d fidMeasuredTri3D = new Triangle3d( fidMeasuredPos3Ds[0], fidMeasuredPos3Ds[1], fidMeasuredPos3Ds[2] );
 
 			// find shift for position
 			Vector3d fidIdealCenPos3D = fidIdealTri3D.center(); // average of 3 points
@@ -143,8 +139,8 @@ public class AlignmentFactory
 			Vector3d fidDiffVec3D = fidMeasuredCenPos3D.minus( fidIdealCenPos3D );
 
 			// find shift for rotation, about nominal triangle center
-			Vector3d fidIdealVec3D = fidIdealTri3D.normal().normalized();
-			Vector3d fidMeasuredVec3D = fidMeasuredTri3D.normal().normalized();
+			Vector3d fidIdealVec3D = fidIdealTri3D.normal.normalized();
+			Vector3d fidMeasuredVec3D = fidMeasuredTri3D.normal.normalized();
 			double[] axisAngle = Util.convertVectorDiffToAxisAngle( fidIdealVec3D, fidMeasuredVec3D );
 			boolean bUsedNormal = true;
 			
@@ -174,13 +170,13 @@ public class AlignmentFactory
 			// if the normals are parallel, use vectors in the plane instead?
 			if( axisAngle[3] < 1E-3 )
 			{
-				fidIdealVec3D =       fidIdealTri3D.point(0).midpoint(    fidIdealTri3D.point(1)  ).vectorTo(   fidIdealTri3D.point(2) ).normalized();
-				fidMeasuredVec3D = fidMeasuredTri3D.point(0).midpoint( fidMeasuredTri3D.point(1) ).vectorTo( fidMeasuredTri3D.point(2) ).normalized();
+				fidIdealVec3D =       fidIdealTri3D.point(0).midpoint(    fidIdealTri3D.point(1)  ).minus(   fidIdealTri3D.point(2) ).normalized();
+				fidMeasuredVec3D = fidMeasuredTri3D.point(0).midpoint( fidMeasuredTri3D.point(1) ).minus( fidMeasuredTri3D.point(2) ).normalized();
 				axisAngle = Util.convertVectorDiffToAxisAngle( fidIdealVec3D, fidMeasuredVec3D );
 				bUsedNormal = false;
 			}
 			
-			//Triangle3D fidDeltaTri3D = new Triangle3D( fidDeltas[0], fidDeltas[1], fidDeltas[2] );
+			//Triangle3d fidDeltaTri3D = new Triangle3d( fidDeltas[0], fidDeltas[1], fidDeltas[2] );
 			//Vector3d fidDeltaCen = fidDeltaTri3D.center();
 			
 			if( VERBOSE && !bUsedNormal )
@@ -197,7 +193,7 @@ public class AlignmentFactory
 			dataShifts[k] = new double[]{ fidDiffVec3D.x, fidDiffVec3D.y, fidDiffVec3D.z, axisAngle[0], axisAngle[1], axisAngle[2], axisAngle[3] };
 		}
 		return dataShifts;
-	}*/
+	}
 	
 	
 	/**
@@ -277,7 +273,7 @@ public class AlignmentFactory
 	 * @param aScaleR a scale factor for the rotation shifts
 	 * @return double[][] shifted points
 	 */
-	/*public static double[][] applyShift( double[][] aData, double[][] aShift, double[][] aCenterData, double aScaleT, double aScaleR )
+	public static double[][] applyShift( double[][] aData, double[][] aShift, double[][] aCenterData, double aScaleT, double aScaleR )
 	{
 		double[][] aShiftedData = aData.clone();
 		for( int j = 0; j < aData.length/3; j+=3 )
@@ -292,7 +288,7 @@ public class AlignmentFactory
 				
 			}
 		return aShiftedData;
-	}*/
+	}
 	
 	
 	/**
@@ -387,11 +383,11 @@ public class AlignmentFactory
 		
 		//System.out.println( aVol.gemcString() );
 		
-		Vector3d pos = new Vector3d( aVol.getPosition()[0]*10, aVol.getPosition()[1]*10, aVol.getPosition()[2]*10 ); // cm -> mm
+		Vector3d pos = new Vector3d( aVol.getLocalPosition().x*10, aVol.getLocalPosition().y*10, aVol.getLocalPosition().z*10 ); // cm -> mm
 		applyShift( pos, aShift, aNominalCenter, aScaleT, aScaleR );
-		aVol.setPosition( pos.x*0.1, pos.y*0.1, pos.z*0.1 );
+		aVol.setPosition( pos.times(0.1) );
 		
-		double[] rot = aVol.getRotation();
+		double[] rot = aVol.getLocalRotation();
 		Matrix rotMatrix = Matrix.convertRotationFromEulerInXYZ_ExZYX( -rot[0], -rot[1], -rot[2] ); // Geant = passive/alias, Java = active/alibi
 		//double[] vec = rotMatrix.convertRotationToEulerInZYX_ExXYZ( rot[0], rot[1], rot[2] ); 
 		
@@ -417,7 +413,8 @@ public class AlignmentFactory
 		Matrix shiftMatrix = Matrix.convertRotationAxisAngleToMatrix( new double[]{ vrs.x, vrs.y, vrs.z, ra } );
 		rotMatrix = Matrix.matMul( shiftMatrix, rotMatrix );
 		rot = Matrix.convertRotationToEulerInXYZ_ExZYX( rotMatrix );
-		aVol.setRotation("xyz", -rot[0], -rot[1], -rot[2] );
+		aVol.rotate("xyz", aVol.getLocalRotation()[0], aVol.getLocalRotation()[1], aVol.getLocalRotation()[2] ); // reverse previous rotation
+		aVol.rotate("xyz", -rot[0], -rot[1], -rot[2] );
 		
 		if( VERBOSE ) System.out.printf("RS: % 8.3f % 8.3f % 8.3f\n", Math.toDegrees(-rot[0]), Math.toDegrees(-rot[1]), Math.toDegrees(-rot[2]) );
 		

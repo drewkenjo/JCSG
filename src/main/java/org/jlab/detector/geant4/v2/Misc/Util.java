@@ -11,7 +11,11 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.IntStream;
 
+import org.jlab.detector.volume.G4Box;
+import org.jlab.detector.volume.G4Tubs;
+import org.jlab.detector.volume.G4World;
 import org.jlab.detector.volume.Geant4Basic;
+
 import eu.mihosoft.vrl.v3d.Vector3d;
 
 /**
@@ -20,7 +24,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Universal class for a variety of useful methods.
  * 
  * <ul>
- * <li> Vector manipulation: visualisation as volume, convert between Vector3d, Matrix and double[], convert difference to axis-angle rotation </li>
+ * <li> Vector manipulation: visualisation as volume, convert between Vector3D, Matrix and double[], convert difference to axis-angle rotation </li>
  * <li> Volume manipulation: toString for GEMC, clone, append name, promote children, shift position, scale position </li>
  * <li> Interfacing with Matrix to use appropriate rotation conversions for standard vectors and Geant </li>
  * <li> File I/O </li>
@@ -65,7 +69,7 @@ public class Util
 	 * 
 	 * @param aVol volume whose children are to be moved
 	 */
-	/*public static void moveChildrenToMother( Geant4Basic aVol )
+	public static void moveChildrenToMother( Geant4Basic aVol )
 	{	
 		// Mother - aVol - Children
 		// Mother - Children
@@ -73,9 +77,8 @@ public class Util
 		if( aVol.getChildren().size() > 0 )
 		{		
 			Geant4Basic mother = aVol.getMother();
-			double[] posV = aVol.getPosition();
-			Vector3d vecVolInMother = Util.toVector3d( posV );
-			double[] rotV = aVol.getRotation();
+			Vector3d vecVolInMother = aVol.getLocalPosition();
+			double[] rotV = aVol.getLocalRotation();
 			Matrix rotVolInMother = Matrix.convertRotationFromEulerInXYZ_ExZYX( -rotV[0], -rotV[1], -rotV[2] );
 			
 			boolean verbose = false;
@@ -88,20 +91,20 @@ public class Util
 			{
 				Geant4Basic child = aVol.getChildren().get(i);
 				
-				double[] rotC = child.getRotation(); 
+				double[] rotC = child.getLocalRotation();
 				Matrix rotChildInVol = Matrix.convertRotationFromEulerInXYZ_ExZYX( -rotC[0], -rotC[1], -rotC[2] );
 				Matrix rotChildInMother = Matrix.matMul( rotVolInMother, rotChildInVol ); // transpose by passing args backwards = rotate like normal in volume's frame, then append rotation in mother's frame  
 				double[] rotNew = Matrix.convertRotationToEulerInXYZ_ExZYX( rotChildInMother );
 				
-				Vector3d vecChildInVol = Util.toVector3d( child.getPosition() ); // volume's frame
-				vecChildInVol = Util.toVector3d(Matrix.matMul( rotVolInMother, Util.toMatrix(vecChildInVol) )); // convert to mother's frame
+				Vector3d vecChildInVol = child.getLocalPosition(); // volume's frame
+				vecChildInVol = Util.toVector3D(Matrix.matMul( rotVolInMother, Util.toMatrix(vecChildInVol) )); // convert to mother's frame
 				Vector3d vecChildInMother = vecChildInVol.add( vecVolInMother ); // mother's frame
-				double[] posNew = Util.toDoubleArray( vecChildInMother );
 				
 				if( verbose ) System.out.printf("child %d: %s\n", i, child.gemcString() );
 	
-				child.setPosition( posNew[0], posNew[1], posNew[2] );
-				child.setRotation("xyz", -rotNew[0], -rotNew[1], -rotNew[2] );
+				child.translate( vecChildInMother.minus(vecChildInVol) );
+				child.rotate("xyz", rotC[0], rotC[1], rotC[2]);
+				child.rotate("xyz", -rotNew[0], -rotNew[1], -rotNew[2] );
 				child.setMother( mother );
 				//child.setName( child.getName()+"-" );
 				
@@ -109,7 +112,7 @@ public class Util
 			}
 			mother.getChildren().remove( aVol );
 		}
-	}*/
+	}
 	
 	
 	/**
@@ -118,11 +121,11 @@ public class Util
 	 * @param aVol volume
 	 * @param aTag string to append
 	 */
-	/*public static void appendName( Geant4Basic aVol, String aTag )
+	public static void appendName( Geant4Basic aVol, String aTag )
 	{
 		aVol.setName( aVol.getName() + aTag );
 		appendChildrenName( aVol, aTag );
-	}*/
+	}
 	
 	
 	/**
@@ -196,7 +199,7 @@ public class Util
 	 */
 	/*public static Geant4Basic cloneNoChildren( Geant4Basic aVol )
 	{
-		Geant4Basic b = new Geant4Basic( aVol.getName(), aVol.getType(), aVol.getParameters() );
+		Geant4Basic b = new Geant4Basic( aVol.getName(), aVol.getType(), aVol.getDimensions() );
 		b.setPosition( aVol.getPosition()[0], aVol.getPosition()[1], aVol.getPosition()[2]);
 		b.setRotation( aVol.getRotationOrder(), aVol.getRotation()[0], aVol.getRotation()[1], aVol.getRotation()[2] );
 		return b;
@@ -219,10 +222,10 @@ public class Util
 	 * Converts the given column-based Matrix to a vector.  
 	 * 
 	 * @param m matrix
-	 * @return Vector3d vector
+	 * @return Vector3D vector
 	 * @throws IllegalArgumentException matrix wrong size
 	 */
-	public static Vector3d toVector3d( Matrix m ) throws IllegalArgumentException
+	public static Vector3d toVector3D( Matrix m ) throws IllegalArgumentException
 	{
 		if( !(m.nRows == 3 && m.nCols == 1 ) ) throw new IllegalArgumentException("Matrix wrong size");
 		return new Vector3d( m.getData()[0], m.getData()[1], m.getData()[2] );
@@ -238,6 +241,22 @@ public class Util
 	public static double[] toDoubleArray( Vector3d v )
 	{
 		return new double[]{ v.x, v.y, v.z };
+	}
+	
+	
+	/**
+	 * Converts the given double[] array to a vector.
+	 * 
+	 * @param a array
+	 * @return Vector3D vector
+	 * @throws IllegalArgumentException array wrong size
+	 */
+	public static Vector3d toVector3D( double[] a ) throws IllegalArgumentException
+	{
+		if( a.length == 3 )
+			return new Vector3d( a[0], a[1], a[2] );
+		else
+			throw new IllegalArgumentException("array wrong size");
 	}
 	
 	
@@ -270,39 +289,39 @@ public class Util
 	 * @param aDisplayCapEnd switch to show end cap
 	 * @return Geant4Basic pseudo volume containing arrow components
 	 */
-	/*public static Geant4Basic createArrow( String aName, Vector3d aVec,
+	public static Geant4Basic createArrow( String aName, Vector3d aVec,
 			double aCapRadius, double aPointerRadius, boolean aDisplayCapStart, boolean aDisplayPointer, boolean aDisplayCapEnd )
 	{
-		Geant4Basic arrowVol = new Geant4Basic(aName+"_arrow0", "Box", 0 ); // container
+		Geant4Basic arrowVol = new G4World(aName+"_arrow0"); // container
 		// put cap at base of vector, with arrow pointing in direction of vector, and optional second cap at end of arrow
 		
 		//System.out.printf("arrow vector x=% 8.3f y=% 8.3f z=% 8.3f mag=% 8.3f\n", aVec.x(), aVec.y(), aVec.z(), aVec.mag() );
 		
 		if( aDisplayCapStart )
 		{
-			Geant4Basic capStartVol = new Geant4Basic( aName+"_arrow1", "orb", aCapRadius*0.1 );
+			Geant4Basic capStartVol = new G4Box( aName+"_arrow1", aCapRadius*0.1, aCapRadius*0.1, aCapRadius*0.1 );
 			capStartVol.setMother( arrowVol ); // origin of a Line3D
 		}
 		if( aDisplayPointer )
 		{
-			Geant4Basic pointerVol = new Geant4Basic( aName+"_arrow2", "eltube", aPointerRadius*0.1, aPointerRadius*0.1, aVec.mag()/2*0.1 );
+			Geant4Basic pointerVol = new G4Tubs( aName+"_arrow2", 0, aPointerRadius*0.1, aVec.magnitude()/2*0.1, 0, 360 );
 			pointerVol.setMother( arrowVol );
 			
-			double[] eulerAngles = Util.convertRotationVectorToGeant( aVec.theta(), aVec.phi() );
-			pointerVol.setRotation("xyz", -eulerAngles[0], -eulerAngles[1], -eulerAngles[2] );
+			double[] eulerAngles = Util.convertRotationVectorToGeant( aVec.magnitude() < 2e-6 ? 1.0 : Math.acos(aVec.magnitude()/aVec.z), Math.atan2(aVec.y, aVec.x) ); // theta, phi
+			pointerVol.rotate("xyz", -eulerAngles[0], -eulerAngles[1], -eulerAngles[2] );
 			
 			// shift centre of geometry of arrow to put first end at start ball
-			pointerVol.setPosition( aVec.divide(2).x()*0.1, aVec.divide(2).y()*0.1, aVec.divide(2).z()*0.1 );
+			pointerVol.translate( aVec.dividedBy(2).x*0.1, aVec.dividedBy(2).y*0.1, aVec.dividedBy(2).z*0.1 );
 		}
 		if( aDisplayCapEnd )
 		{
-			Geant4Basic capEndVol = new Geant4Basic( aName+"_arrow3", "orb", aCapRadius*0.1 );
-			capEndVol.setPosition( aVec.x()*0.1, aVec.y()*0.1, aVec.z()*0.1 );
+			Geant4Basic capEndVol = new G4Box( aName+"_arrow3", aCapRadius*0.1, aCapRadius*0.1, aCapRadius*0.1 );
+			capEndVol.translate( aVec.x*0.1, aVec.y*0.1, aVec.z*0.1 );
 			capEndVol.setMother( arrowVol );
 		}
 		
 		return arrowVol;
-	}*/
+	}
 	
 	
 	/**
@@ -395,10 +414,11 @@ public class Util
 	 * @param aVol volume
 	 * @param aFactor scale factor
 	 */
-	/*public static void scalePosition( Geant4Basic aVol, double aFactor )
+	public static void scalePosition( Geant4Basic aVol, double aFactor )
 	{
-		double[] p = aVol.getPosition();
-		aVol.setPosition( p[0]*aFactor, p[1]*aFactor, p[2]*aFactor );
+		Vector3d p = aVol.getLocalPosition();
+		Vector3d v = p.times( aFactor );
+		aVol.translate( v.minus(p) );
 		
 		List<Geant4Basic> children = aVol.getChildren();
 		for( int i = 0; i < children.size(); i++ )
@@ -408,9 +428,9 @@ public class Util
 	}
 	
 	
-	public static void scaleDimensions( Geant4Basic aVol, double aFactor )
+	/*public static void scaleDimensions( Geant4Basic aVol, double aFactor )
 	{
-		double[] d = aVol.getParameters();
+		List<Measurement> d = aVol.getDimensions();
 		
 		String type = aVol.getType().toLowerCase();
 		
@@ -419,15 +439,15 @@ public class Util
 		case "box": // cube or cuboid
 		case "eltube": // cylinder along Z axis
 		case "orb": // sphere
-			
-			for( int i = 0; i < d.length; i++ )
-				d[i] *= aFactor;
+			for( int i = 0; i < d.size(); i++ )
+			{
+				Measurement d.get(i)
+				d.set(i,  );
+			}
 			break;
 			
-		case "tube": // hollow tube segment
-			
-			for( int i = 0; i < 3; i++ ) // rmax, rmin, z, deltaphi, startphi
-				d[i] *= aFactor;
+		case "tube": // hollow tube segment, only z needs to be halved
+			d[2] *= aFactor; // rmin, rmax, z, startphi, deltaphi
 			break;
 			
 		default:
@@ -452,11 +472,13 @@ public class Util
 	 * @param aShiftY shift
 	 * @param aShiftZ shift
 	 */
-	/*public static void shiftPosition( Geant4Basic aVol, double aShiftX, double aShiftY, double aShiftZ )
+	public static void shiftPosition( Geant4Basic aVol, double aShiftX, double aShiftY, double aShiftZ )
 	{
-		double[] p = aVol.getPosition();
-		aVol.setPosition( p[0] + aShiftX, p[1] + aShiftY, p[2] + aShiftZ );
-	}*/
+		Vector3d p = aVol.getLocalPosition();
+		Vector3d s = new Vector3d( aShiftX, aShiftY, aShiftZ );
+		Vector3d v = p.add(s);
+		aVol.translate( v.minus(p) );
+	}
 	
 	
 	/**

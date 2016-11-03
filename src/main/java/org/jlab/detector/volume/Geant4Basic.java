@@ -326,6 +326,22 @@ public abstract class Geant4Basic {
 
     public Line3d getLineZ() {
         throw new UnsupportedOperationException("Not implemented for that particular volume class, YET...");
-//        return new Line3d(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0));
+        //return new Line3d(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0));
     }
+
+    /**
+     * @author pdavies
+     */
+	public void setPosition( double x, double y, double z )
+	{
+		setPosition( new Vector3d(x,y,z) );
+	}
+
+	/**
+	 * @author pdavies
+	 */
+	public void setPosition( Vector3d position )
+	{
+		this.translate( position.minus(this.getLocalPosition()) );
+	}
 }

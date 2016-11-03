@@ -24,4 +24,18 @@ public class Tube implements Primitive {
 		this.pDphi = pDphi;
 	}
 
+	@Override
+	public List<Polygon> toPolygons()
+	{
+		return null;
+	}
+
+	@Override
+	public PropertyStorage getProperties()
+	{
+		return null;
+	}
+	
+	
+
 }

@@ -5,8 +5,16 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.jlab.detector.calib.utils.DatabaseConstantProvider;
+import org.jlab.detector.geant4.v2.Alignment.AlignmentFactory;
 import org.jlab.detector.geant4.v2.Misc.Util;
+import org.jlab.detector.volume.G4Box;
+import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.Geant4Basic;
+import org.jlab.geometry.prim.Triangle3d;
+
+import eu.mihosoft.vrl.v3d.Transform;
+import eu.mihosoft.vrl.v3d.Vector3d;
 
 /**
  * <h1> Geometry for the SVT </h1>
@@ -26,11 +34,11 @@ import org.jlab.detector.volume.Geant4Basic;
  * </ul>
  * 
  * @author pdavies
- * @version 0.2.6
+ * @version 1.0.0
  */
 public class SVTVolumeFactory
 {
-	private final Geant4Basic motherVol = new G4Tubs("svt", 0, 1, 2, 0, 360 );
+	private Geant4Basic motherVol;
 	private final HashMap< String, String > parameters = new LinkedHashMap<>(); // store core parameters from CCDB and build switches for GEMC's perl scripts
 	private final HashMap< String, String > properties = new LinkedHashMap<>(); // author, email, date
 	
@@ -85,7 +93,7 @@ public class SVTVolumeFactory
 		double[] dims = SVTConstants.MATERIALDIMENSIONS.get( aName );
 		if( dims == null )
 			throw new IllegalArgumentException("unknown material: \""+ aName + "\"");
-		return new Geant4Basic( aName, "Box", dims[0]*0.1, dims[1]*0.1, dims[2]*0.1 );
+		return new G4Box( aName, dims[0]*0.1, dims[1]*0.1, dims[2]*0.1 );
 	}
 	
 	
@@ -96,7 +104,7 @@ public class SVTVolumeFactory
 	 * @param cp a DatabaseConstantProvider that has loaded the necessary tables
 	 * @param applyAlignmentShiftsFromCcdb a switch to set whether the alignment shifts from CCDB will be applied
 	 */
-	public SVTVolumeFactory( ConstantProvider cp, boolean applyAlignmentShiftsFromCcdb )
+	public SVTVolumeFactory( DatabaseConstantProvider cp, boolean applyAlignmentShiftsFromCcdb )
 	{
 		SVTConstants.load( cp );
 		setApplyAlignmentShifts( applyAlignmentShiftsFromCcdb );
@@ -108,7 +116,7 @@ public class SVTVolumeFactory
 		// default behaviour
 		setRange( 1, SVTConstants.NREGIONS, new int[]{ 1, 1, 1, 1 }, SVTConstants.NSECTORS, 1, SVTConstants.NMODULES ); // all regions, sectors, and modules
 		
-		Geant4Basic top = new Geant4Basic("none", "Box", 0,0,0 );
+		Geant4Basic top = new G4Box("none", 0,0,0 );
 		motherVol.setMother( top );
 	}
 	
@@ -173,7 +181,7 @@ public class SVTVolumeFactory
 		System.out.println("include physical sensors ? "+ BUILDSENSORS );
 		if( BUILDSENSORS ) System.out.println("include sensor active and dead zones ? "+ BUILDSENSORZONES );
 		
-		//double sumZ0Active = 0;
+		motherVol = new G4Tubs("svt", 0, SVTConstants.LAYERRADIUS[regionMax-1][1]*0.1, (SVTConstants.SECTORLEN*1.5)*0.1, 0, 360 );
 		
 		for( int region = regionMin-1; region < regionMax; region++ ) // NREGIONS
 		{
@@ -185,9 +193,9 @@ public class SVTVolumeFactory
 			Util.appendChildrenName( regionVol, "_r"+ (region+1) );
 			
 			double zStartPhysical = SVTConstants.Z0ACTIVE[region] - SVTConstants.DEADZNLEN; // Cu edge of hybrid sensor's physical volume
-			regionVol.setPosition( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ)*0.1 + regionVol.getParameters()[2]/2 ); // central dowel hole
+			regionVol.translate( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ)*0.1 + regionVol.getDimensions().get(2).value/2 ); // central dowel hole
 			
-			//regionVol.setRotation("xyz", 0.0, 0.0, -Math.toRadians(90.0) ); // add a shift to test Util.replaceChildrenMother
+			//regionVol.rotate("xyz", 0.0, 0.0, -Math.toRadians(90.0) ); // add a shift to test Util.replaceChildrenMother
 			//Util.moveChildrenToMother( regionVol );
 			
 			//sumZ0Active += SVTConstants.Z0ACTIVE[region];
@@ -200,25 +208,25 @@ public class SVTVolumeFactory
 					Geant4Basic sectorVol = regionVol.getChildren().get( sector );
 					
 					//System.out.println("N "+sectorVol.gemcString() );
-					Point3D[] fidPos3Ds = SVTAlignmentFactory.getIdealFiducials( region, sector );
-					Triangle3D fidTri3D = new Triangle3D( fidPos3Ds[0], fidPos3Ds[1], fidPos3Ds[2] );
+					Vector3d[] fidPos3Ds = SVTAlignmentFactory.getIdealFiducials( region, sector );
+					Triangle3d fidTri3D = new Triangle3d( fidPos3Ds[0], fidPos3Ds[1], fidPos3Ds[2] );
 					
 					//System.out.println("rs "+ convertRegionSector2SvtIndex( aRegion, sector ));
 					double[] shift = SVTConstants.getDataAlignmentSectorShift()[SVTConstants.convertRegionSector2Index( region, sector )].clone();
 					
 					if( VERBOSE )
 					{
-						Vector3D vec = new Vector3D( shift[3], shift[4], shift[5] ).asUnit();
-						vec.scale( (shift[6] == 0) ? 0 : 10 ); // length in mm, but only if non-zero angle
+						Vector3d vec = new Vector3d( shift[3], shift[4], shift[5] ).normalized();
+						vec.times( (shift[6] == 0) ? 0 : 10 ); // length in mm, but only if non-zero angle
 						//vec.show();
 						
 						Geant4Basic vecVol = Util.createArrow("rotAxis"+sector, vec, 2.0, 1.0, true, true, false );
-						vecVol.setPosition( fidTri3D.center().x()*0.1, fidTri3D.center().y()*0.1, fidTri3D.center().z()*0.1 );
+						vecVol.setPosition( fidTri3D.center().times(0.1) );
 						vecVol.setMother( regionVol );
 						//System.out.println( vecVol.gemcString() );
 					}
 					
-					int n = 1; // number of steps to show (n=1 for final step only)
+					/*int n = 1; // number of steps to show (n=1 for final step only)
 					double d = shift[6]/n;
 					for( int i = 1; i < n; i++ )
 					{
@@ -231,7 +239,7 @@ public class SVTVolumeFactory
 						//System.out.println("  "+stepVol.gemcString() );
 						//for( int j = 0; j < stepVol.getChildren().size(); j++ )
 							//System.out.println( stepVol.getChildren().get(j).gemcString() );
-					}
+					}*/
 					
 					AlignmentFactory.applyShift( sectorVol, SVTConstants.getDataAlignmentSectorShift()[SVTConstants.convertRegionSector2Index( region, sector )], fidTri3D.center(), scaleT, scaleR );
 					//System.out.println("S "+sectorVol.gemcString() );
@@ -240,8 +248,6 @@ public class SVTVolumeFactory
 		}
 		
 		//double meanZ0Active = sumZ0Active/(regionMax - regionMin + 1);
-		
-		motherVol.setParameters( 0, SVTConstants.LAYERRADIUS[regionMax-1][1]*0.1, (SVTConstants.SECTORLEN*1.5)*0.1, 0, 360 );
 	}
 	
 	
@@ -272,7 +278,7 @@ public class SVTVolumeFactory
 			System.out.println("len="+ zlen );
 		}
 		
-		Geant4Basic regionVol = new Geant4Basic("region", "Tube", rmin*0.1, rmax*0.1, zlen*0.1, 0, 360 );
+		Geant4Basic regionVol = new G4Tubs("region", rmin*0.1, rmax*0.1, zlen*0.1, 0, 360 );
 		
 		// create faraday cage here?
 		
@@ -288,17 +294,17 @@ public class SVTVolumeFactory
 			double phi = -2.0*Math.PI/SVTConstants.NSECTORS[aRegion]*sector + SVTConstants.PHI0; // module rotation about target / origin
 			double psi = phi - SVTConstants.SECTOR0 - Math.PI; // module rotation about centre of geometry, -180 deg to set zero volume rotation for sector 1
 			
-			Transformation3D rotatePhi = new Transformation3D();
-			rotatePhi.rotateZ( phi );
+			Transform rotatePhi = new Transform();
+			rotatePhi.rotZ( phi );
 			
 			//double heatSinkThk = SVTConstants.MATERIALDIMENSIONS.get("heatSink")[1]; // 2.880 mm
 			//double fiducialRadius = SVTConstants.SUPPORTRADIUS[aRegion] + heatSinkThk;
 			
 			//Point3D pos = new Point3D( fiducialRadius - heatSinkThk + sectorVol.getParameters()[1]/2, 0, zStartPhysical - SVTConstants.FIDORIGINZ + sectorVol.getParameters()[2]/2 );
-			Point3D pos = new Point3D( rcen, 0.0, 0.0 );
-			rotatePhi.apply( pos );
-			sectorVol.setPosition( pos.x()*0.1, pos.y()*0.1, pos.z()*0.1 );
-			sectorVol.setRotation("xyz", 0.0, 0.0, -psi ); // change of sign for active/alibi -> passive/alias rotation
+			Vector3d pos = new Vector3d( rcen, 0.0, 0.0 );
+			pos.transform( rotatePhi );
+			sectorVol.setPosition( pos.times(0.1) );
+			sectorVol.rotate("xyz", 0.0, 0.0, -psi ); // change of sign for active/alibi -> passive/alias rotation
 			//Util.moveChildrenToMother( sectorVol );
 		}
 		
@@ -334,7 +340,7 @@ public class SVTVolumeFactory
 		double thk = SVTConstants.LAYERGAPTHK + 2*SVTConstants.SILICONTHK;
 		double len = SVTConstants.SECTORLEN;
 		
-		Geant4Basic sectorVol = new Geant4Basic("sector", "Box", wid*0.1, thk*0.1, len*0.1 );
+		Geant4Basic sectorVol = new G4Box("sector", wid*0.1, thk*0.1, len*0.1 );
 		
 		// position components relative to fiducial layer
 		
@@ -414,22 +420,22 @@ public class SVTVolumeFactory
 					carbonFiberY  = 0.0 + carbonFiberThk/2;
 					busCableY     = 0.0 + carbonFiberThk + busCableThk/2;
 					pitchAdaptorY = 0.0 + SVTConstants.PASSIVETHK + pitchAdaptorThk/2;
-					pcBoardY      = 0.0 + SVTConstants.PASSIVETHK + pcBoardAndChipsVol.getParameters()[1]/2*10;
+					pcBoardY      = 0.0 + SVTConstants.PASSIVETHK + pcBoardAndChipsVol.getDimensions().get(1).value/2*10;
 					break;
 					
 				case 1: // V = outer
 					carbonFiberY  = 0.0 - rohacellThk - carbonFiberThk/2;
 					busCableY     = 0.0 - rohacellThk - carbonFiberThk - busCableThk/2;
 					pitchAdaptorY = 0.0 - rohacellThk - SVTConstants.PASSIVETHK - pitchAdaptorThk/2;
-					pcBoardY      = 0.0 - rohacellThk - SVTConstants.PASSIVETHK - pcBoardAndChipsVol.getParameters()[1]/2*10;
-					pcBoardAndChipsVol.setRotation("xyz", 0.0, 0.0, -Math.PI );
+					pcBoardY      = 0.0 - rohacellThk - SVTConstants.PASSIVETHK - pcBoardAndChipsVol.getDimensions().get(1).value/2*10;
+					pcBoardAndChipsVol.rotate("xyz", 0.0, 0.0, -Math.PI );
 					break;
 				}
 			
-				carbonFiberVol.setPosition(  0.0, carbonFiberY*0.1,  (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + carbonFiberVol.getParameters()[2]/2 );
-				busCableVol.setPosition(     0.0, busCableY*0.1,     (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + busCableVol.getParameters()[2]/2 ); // same Z position as carbonFiber
-				pitchAdaptorVol.setPosition( 0.0, pitchAdaptorY*0.1, pitchAdaptorZEnd*0.1 - pitchAdaptorVol.getParameters()[2]/2 );
-				pcBoardAndChipsVol.setPosition(      0.0, pcBoardY*0.1,      pcBoardZEnd*0.1 - pcBoardAndChipsVol.getParameters()[2]/2 );
+				carbonFiberVol.setPosition(     0.0, carbonFiberY*0.1,  (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + carbonFiberVol.getDimensions().get(2).value/2 );
+				busCableVol.setPosition(        0.0, busCableY*0.1,     (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + busCableVol.getDimensions().get(2).value/2 ); // same Z position as carbonFiber
+				pitchAdaptorVol.setPosition(    0.0, pitchAdaptorY*0.1, pitchAdaptorZEnd*0.1 - pitchAdaptorVol.getDimensions().get(2).value/2 );
+				pcBoardAndChipsVol.setPosition( 0.0, pcBoardY*0.1,      pcBoardZEnd*0.1 - pcBoardAndChipsVol.getDimensions().get(2).value/2 );
 			}
 			
 			/*for( int kapton = 0; kapton < 1; kapton++ ) // left, right
@@ -439,7 +445,7 @@ public class SVTVolumeFactory
 		}
 		
 		for( Geant4Basic child : sectorVol.getChildren() )
-			Util.shiftPosition( child, 0.0, rohacellThk/2*0.1, -sectorVol.getParameters()[2]/2 );
+			Util.shiftPosition( child, 0.0, rohacellThk/2*0.1, -sectorVol.getDimensions().get(2).value/2 );
 	
 		return sectorVol;
 	}
@@ -452,7 +458,7 @@ public class SVTVolumeFactory
 	 */
 	public Geant4Basic createModule()
 	{		
-		Geant4Basic moduleVol = new Geant4Basic( "module", "Box", SVTConstants.PHYSSENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.MODULELEN*0.1 );
+		Geant4Basic moduleVol = new G4Box( "module", SVTConstants.PHYSSENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.MODULELEN*0.1 );
 		
 		if( BUILDSENSORS ) // gemc handles the physical sensors itself in the hit process algorithm
 		{
@@ -493,7 +499,7 @@ public class SVTVolumeFactory
 	 */
 	public Geant4Basic createSensorPhysical()
 	{		
-		Geant4Basic senPhysicalVol = new Geant4Basic( "sensorPhysical", "Box", SVTConstants.PHYSSENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.PHYSSENLEN*0.1 );
+		Geant4Basic senPhysicalVol = new G4Box( "sensorPhysical", SVTConstants.PHYSSENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.PHYSSENLEN*0.1 );
 		
 		if( BUILDSENSORZONES ) // gemc handles the active and dead zones itself in the hit process algorithm
 		{
@@ -553,7 +559,7 @@ public class SVTVolumeFactory
 	 */
 	public Geant4Basic createSensorActive( )
 	{	
-		return new Geant4Basic( "sensorActive", "Box", SVTConstants.ACTIVESENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.ACTIVESENLEN*0.1 );
+		return new G4Box( "sensorActive", SVTConstants.ACTIVESENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.ACTIVESENLEN*0.1 );
 	}
 	
 	
@@ -571,10 +577,10 @@ public class SVTVolumeFactory
 		switch( aType )
 		{
 		case "l":
-			deadZnVol = new Geant4Basic( "deadZoneLen", "Box", SVTConstants.DEADZNWID*0.1, SVTConstants.SILICONTHK*0.1, (SVTConstants.ACTIVESENLEN + 2*SVTConstants.DEADZNLEN)*0.1 );
+			deadZnVol = new G4Box( "deadZoneLen", SVTConstants.DEADZNWID*0.1, SVTConstants.SILICONTHK*0.1, (SVTConstants.ACTIVESENLEN + 2*SVTConstants.DEADZNLEN)*0.1 );
 			break;
 		case "w":
-			deadZnVol = new Geant4Basic( "deadZoneWid", "Box", SVTConstants.ACTIVESENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.DEADZNLEN*0.1 );
+			deadZnVol = new G4Box( "deadZoneWid", SVTConstants.ACTIVESENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.DEADZNLEN*0.1 );
 			break;
 		default:
 			throw new IllegalArgumentException("unknown dead zone type: "+ aType );
@@ -594,8 +600,8 @@ public class SVTVolumeFactory
 		Geant4Basic ridgeVol = createNamedBox("heatSinkRidge"); // small protruding ridge
 		ridgeVol.setMother( mainVol );
 		
-		cuVol.setPosition(    0.0, ridgeVol.getParameters()[1]/2, 0.0 );
-		ridgeVol.setPosition( 0.0, ridgeVol.getParameters()[1] + cuVol.getParameters()[1]/2, ridgeVol.getParameters()[2]/2 - cuVol.getParameters()[2]/2 );
+		cuVol.setPosition(    0.0, ridgeVol.getDimensions().get(1).value/2, 0.0 );
+		ridgeVol.setPosition( 0.0, ridgeVol.getDimensions().get(1).value + cuVol.getDimensions().get(1).value/2, ridgeVol.getDimensions().get(2).value/2 - cuVol.getDimensions().get(2).value/2 );
 		
 		return mainVol;
 	}
@@ -612,8 +618,8 @@ public class SVTVolumeFactory
 		Geant4Basic pkVol = createNamedBox("carbonFiberPk");
 		pkVol.setMother( mainVol );
 		
-		cuVol.setPosition( 0.0, 0.0, cuVol.getParameters()[2]/2 - mainVol.getParameters()[2]/2 );
-		pkVol.setPosition( 0.0, 0.0, pkVol.getParameters()[2]/2 - mainVol.getParameters()[2]/2 + cuVol.getParameters()[2] );
+		cuVol.setPosition( 0.0, 0.0, cuVol.getDimensions().get(2).value/2 - mainVol.getDimensions().get(2).value/2 );
+		pkVol.setPosition( 0.0, 0.0, pkVol.getDimensions().get(2).value/2 - mainVol.getDimensions().get(2).value/2 + cuVol.getDimensions().get(2).value );
 		
 		//     + - - +
 		// + - +     |
@@ -636,8 +642,8 @@ public class SVTVolumeFactory
 		Geant4Basic pkVol = createNamedBox("busCablePk");
 		pkVol.setMother( mainVol );
 		
-		cuVol.setPosition( 0.0, 0.0, cuVol.getParameters()[2]/2 - mainVol.getParameters()[2]/2 );
-		pkVol.setPosition( 0.0, 0.0, pkVol.getParameters()[2]/2 - mainVol.getParameters()[2]/2 + cuVol.getParameters()[2] );
+		cuVol.setPosition( 0.0, 0.0, cuVol.getDimensions().get(2).value/2 - mainVol.getDimensions().get(2).value/2 );
+		pkVol.setPosition( 0.0, 0.0, pkVol.getDimensions().get(2).value/2 - mainVol.getDimensions().get(2).value/2 + cuVol.getDimensions().get(2).value );
 		
 		return mainVol;
 	}
@@ -646,7 +652,7 @@ public class SVTVolumeFactory
 	
 	public Geant4Basic createPcBoardAndChips()
 	{
-		Geant4Basic mainVol = createNamedBox("pcBoard");
+		Geant4Basic mainVol = createNamedBox("pcBoardAndChips");
 		
 		Geant4Basic pcBoardVol = createNamedBox("pcBoard");
 		pcBoardVol.setMother( mainVol );
@@ -659,16 +665,12 @@ public class SVTVolumeFactory
 		chipRVol.setMother( mainVol );
 		chipRVol.setName("chipR");
 		
-		double[] pars = mainVol.getParameters();
-		mainVol.setParameters( pars[0], pars[1] + chipLVol.getParameters()[1], pars[2] );
-		mainVol.setName("pcBoardAndChips");
-		
 		double chipX = 13.74 - 7.50/2;
-		double chipZ = pcBoardVol.getParameters()[2]/2*10 - 17.99 + 17.45 - chipLVol.getParameters()[2]/2*10;
+		double chipZ = pcBoardVol.getDimensions().get(2).value/2*10 - 17.99 + 17.45 - chipLVol.getDimensions().get(2).value/2*10;
 				
-		pcBoardVol.setPosition( 0.0, -pcBoardVol.getParameters()[1]/2, 0.0 );
-		chipLVol.setPosition(  chipX*0.1, chipLVol.getParameters()[1]/2, chipZ*0.1 );
-		chipRVol.setPosition( -chipX*0.1, chipRVol.getParameters()[1]/2, chipZ*0.1 );
+		pcBoardVol.setPosition( 0.0, -pcBoardVol.getDimensions().get(1).value/2, 0.0 );
+		chipLVol.setPosition(  chipX*0.1, chipLVol.getDimensions().get(1).value/2, chipZ*0.1 );
+		chipRVol.setPosition( -chipX*0.1, chipRVol.getDimensions().get(1).value/2, chipZ*0.1 );
 		
 		return mainVol;
 	}

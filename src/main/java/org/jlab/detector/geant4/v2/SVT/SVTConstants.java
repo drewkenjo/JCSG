@@ -8,6 +8,8 @@ import org.jlab.detector.calib.utils.DatabaseConstantProvider; // coatjava-3.0
 import org.jlab.geom.base.ConstantProvider;
 import org.jlab.geom.prim.Transformation3D;
 
+import eu.mihosoft.vrl.v3d.Transform;
+
 import org.jlab.detector.geant4.v2.Alignment.AlignmentFactory;
 import org.jlab.detector.geant4.v2.Misc.Util;
 
@@ -689,7 +691,7 @@ public class SVTConstants
 	 * @return Transformation3D a sequence of transformations
 	 * @throws IllegalArgumentException indices out of bounds
 	 */
-	public static Transformation3D getLabFrame( int aRegion, int aSector, double aRadius, double aZ ) throws IllegalArgumentException
+	public static Transform getLabFrame( int aRegion, int aSector, double aRadius, double aZ ) throws IllegalArgumentException
 	{
 		if( aRegion < 0 || aRegion > NREGIONS-1 ){ throw new IllegalArgumentException("region out of bounds"); }
 		if( aSector < 0 || aSector > NSECTORS[aRegion]-1 ){ throw new IllegalArgumentException("sector out of bounds"); }
@@ -723,8 +725,8 @@ public class SVTConstants
 		//								|
 		
 		double phi = -2.0*Math.PI/NSECTORS[aRegion]*aSector + PHI0;
-		Transformation3D labFrame = new Transformation3D();
-		labFrame.rotateZ( -SECTOR0 ).translateXYZ( aRadius, 0, aZ ).rotateZ( phi );
+		Transform labFrame = new Transform();
+		labFrame.rotZ( -SECTOR0 ).translate( aRadius, 0, aZ ).rotZ( phi );
 		return labFrame;
 	}
 	
