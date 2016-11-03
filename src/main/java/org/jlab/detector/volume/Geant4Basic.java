@@ -7,7 +7,6 @@ package org.jlab.detector.volume;
 
 import org.jlab.detector.units.Measurement;
 import eu.mihosoft.vrl.v3d.CSG;
-import eu.mihosoft.vrl.v3d.Plane;
 import org.jlab.geometry.prim.Straight;
 import eu.mihosoft.vrl.v3d.Primitive;
 import eu.mihosoft.vrl.v3d.Transform;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jlab.detector.hits.DetHit;
 import org.jlab.detector.units.SystemOfUnits.Length;
+import org.jlab.geometry.prim.Line3d;
 
 /**
  *
@@ -25,15 +25,18 @@ import org.jlab.detector.units.SystemOfUnits.Length;
  */
 public abstract class Geant4Basic {
 
-    String volumeName;
-    String volumeType;
+    protected String volumeName;
+    protected String volumeType;
+    protected int[] rgb = {0x00, 0x00, 0xff};
+    protected boolean sensitivity = false;
+    protected boolean abstraction = false;
 
     protected CSG volumeCSG;
     protected final Primitive volumeSolid;
 
     private final Transform volumeTransformation = Transform.unity();
 
-    String rotationOrder = "xyz";
+    protected String rotationOrder = "xyz";
     double[] rotationValues = {0.0, 0.0, 0.0};
 
     int[] volumeId = new int[]{};
@@ -56,6 +59,22 @@ public abstract class Geant4Basic {
         return volumeDimensions;
     }
 
+    public final void makeSensitive() {
+        sensitivity = true;
+    }
+
+    public boolean isSensitive() {
+        return sensitivity;
+    }
+
+    public final void makeAbstract() {
+        abstraction = true;
+    }
+
+    public boolean isAbstract() {
+        return abstraction;
+    }
+
     public final void setName(String name) {
         this.volumeName = name;
     }
@@ -69,6 +88,16 @@ public abstract class Geant4Basic {
         this.motherVolume.getChildren().add(this);
 
         updateCSGtransformation();
+    }
+
+    public void setColor1(int rgbR, int rgbG, int rgbB) {
+        rgb[0] = rgbR;
+        rgb[1] = rgbG;
+        rgb[2] = rgbB;
+    }
+
+    public int[] getColor1() {
+        return rgb;
     }
 
     public Geant4Basic getMother() {
@@ -117,6 +146,11 @@ public abstract class Geant4Basic {
         return globalTransform;
     }
 
+    protected void afterCSGtransformation() {
+    }
+
+    ;
+    
     protected final void updateCSGtransformation() {
         children.stream()
                 .forEach(child -> child.updateCSGtransformation());
@@ -124,6 +158,8 @@ public abstract class Geant4Basic {
         if (volumeSolid != null) {
             volumeCSG = volumeSolid.toCSG().transformed(getGlobalTransform());
         }
+
+        afterCSGtransformation();
     }
 
     public Geant4Basic translate(double x, double y, double z) {
@@ -132,8 +168,8 @@ public abstract class Geant4Basic {
 
         return this;
     }
-    
-    public Geant4Basic scale(double scalefactor){
+
+    public Geant4Basic scale(double scalefactor) {
         volumeTransformation.prepend(Transform.unity().scale(scalefactor));
         updateCSGtransformation();
 
@@ -195,9 +231,8 @@ public abstract class Geant4Basic {
         }
 
         Vector3d pos = getLocalPosition();
-        str.append(pos.x + "*" + Length.unit() + " "
-                + pos.y + "*" + Length.unit() + " "
-                + pos.z + "*" + Length.unit() + " | ");
+        str.append(String.format("%f*%s %f*%s %f*%s | ",
+                pos.x, Length.unit(), pos.y, Length.unit(), pos.z, Length.unit()));
 
         if (rotationValues[0] == 0 && rotationValues[1] == 0 && rotationValues[2] == 0) {
             str.append("0 0 0 ");
@@ -224,8 +259,10 @@ public abstract class Geant4Basic {
 
     public String gemcStringRecursive() {
         StringBuilder str = new StringBuilder();
-        str.append(gemcString());
-        str.append(System.getProperty("line.separator"));
+        if(!isAbstract()){
+            str.append(gemcString());
+            str.append(System.getProperty("line.separator"));
+        }
 
         children.stream().
                 forEach(child -> str.append(child.gemcStringRecursive()));
@@ -248,15 +285,8 @@ public abstract class Geant4Basic {
     }
 
     public List<DetHit> getIntersections(Straight line) {
-        List<DetHit> hits = new ArrayList<>();
-
         if (children.isEmpty()) {
-            List<Vector3d> dots = volumeCSG.getIntersections(line);
-
-            for (int ihit = 0; ihit < dots.size() / 2; ihit++) {
-                DetHit hit = new DetHit(dots.get(ihit * 2), dots.get(ihit * 2 + 1), this);
-                hits.add(hit);
-            }
+            return getIntersectedHits(line);
         } else {
             List<Vector3d> dots = volumeCSG.getIntersections(line.toLine());
             if (dots.size() > 0) {
@@ -266,7 +296,36 @@ public abstract class Geant4Basic {
             }
         }
 
+        return new ArrayList<>();
+    }
+
+    protected List<DetHit> getIntersectedHits(Straight line) {
+        List<DetHit> hits = new ArrayList<>();
+        if (this.isSensitive()) {
+
+            //mainly for complicated shapes
+            //if the number of polygons is large,
+            //it's more efficient to test the bounds on intersections
+            //before testing all polygons involved
+            if (volumeCSG.getPolygons().size() > 20) {
+                List<Vector3d> dots = volumeCSG.getBounds().toCSG().getIntersections(line.toLine());
+                if (dots.isEmpty()) {
+                    return hits;
+                }
+            }
+
+            List<Vector3d> dots = volumeCSG.getIntersections(line);
+
+            for (int ihit = 0; ihit < dots.size() / 2; ihit++) {
+                DetHit hit = new DetHit(dots.get(ihit * 2), dots.get(ihit * 2 + 1), this);
+                hits.add(hit);
+            }
+        }
         return hits;
     }
 
+    public Line3d getLineZ() {
+        throw new UnsupportedOperationException("Not implemented for that particular volume class, YET...");
+//        return new Line3d(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0));
+    }
 }

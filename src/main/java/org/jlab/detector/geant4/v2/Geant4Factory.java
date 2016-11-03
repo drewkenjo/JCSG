@@ -18,6 +18,7 @@ import org.jlab.detector.volume.G4World;
  * @author kenjo
  */
 public abstract class Geant4Factory {
+
     protected G4World motherVolume = new G4World("fc");
     protected final HashMap<String, String> properties = new HashMap<>();
 
@@ -32,13 +33,13 @@ public abstract class Geant4Factory {
         return properties.containsKey(name) ? properties.get(name) : "none";
     }
 
-    public List<Geant4Basic> getComponents(){
+    public List<Geant4Basic> getComponents() {
         return motherVolume.getChildren().stream()
                 .flatMap(child -> child.getComponents().stream())
                 .collect(Collectors.toList());
     }
-    
-    public List<DetHit> getIntersections(Straight line){
+
+    public List<DetHit> getIntersections(Straight line) {
         return motherVolume.getChildren().stream()
                 .flatMap(child -> child.getIntersections(line).stream())
                 .collect(Collectors.toList());
