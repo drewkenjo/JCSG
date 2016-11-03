@@ -636,4 +636,30 @@ public class Vector3d {
         
         return this;
     }
+    
+    /**
+     * Rotates the given vector clockwise  around the axis produced by this
+     * vector by the given angle.
+     * 
+     * Copied from https://github.com/psq95/clas12/blob/master/clas-geometry/src/main/java/org/jlab/geom/prim/Vector3D.java#L430
+     * 
+     * @param vector the vector to rotate
+     * @param angle the angle of rotation
+     */
+	public void rotate( Vector3d vector, double angle ) {
+		
+		double m = vector.magnitude(); //double m = vector.mag();
+        Vector3d N = this.clone().normalized(); //Vector3D N = new Vector3D(this); N.unit();
+        Vector3d A = N.cross(vector);
+        Vector3d B = A.cross(N);
+        A.times( Math.sin(angle) ); //A.scale(Math.sin(angle));
+        B.times( Math.cos(angle) ); //B.scale(Math.cos(angle));
+        double n = N.dot(vector);
+        vector.set(N); //vector.copy(N);
+        vector.times(n); //vector.setMag(n);
+        vector.add(A);
+        vector.add(B);
+        vector.normalized().times(m); //vector.setMag(m);
+		
+	}
 }

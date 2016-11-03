@@ -27,7 +27,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 0.2.3
+ * @version 1.0.0
  */
 public class Util
 {

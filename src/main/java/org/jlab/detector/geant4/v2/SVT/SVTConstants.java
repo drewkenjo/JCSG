@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-//import org.jlab.clasrec.utils.DatabaseConstantProvider; // coatjava-2.4
 import org.jlab.detector.calib.utils.DatabaseConstantProvider; // coatjava-3.0
 import org.jlab.geom.base.ConstantProvider;
 import org.jlab.geom.prim.Transformation3D;
@@ -30,7 +29,7 @@ import org.jlab.detector.geant4.v2.Misc.Util;
  * </ul>
  * 
  * @author pdavies
- * @version 0.2.3
+ * @version 1.0.0
  */
 public class SVTConstants
 {
@@ -90,6 +89,7 @@ public class SVTConstants
 	// dimensions of passive materials
 	public static int NMATERIALS;
 	public static HashMap< String, double[] > MATERIALDIMENSIONS = new LinkedHashMap<>();
+	public static double PASSIVETHK;
 	//
 	// calculated on load()
 	public static int NLAYERS; // total number of layers in a sector
@@ -100,6 +100,7 @@ public class SVTConstants
 	public static double MODULELEN;    // || DZ |  AZ  | DZ |MG| DZ |  AZ  | DZ |MG| DZ |  AZ  || DZ ||
 	public static double STRIPLENMAX;  //      ||  AZ  | DZ |MG| DZ |  AZ  | DZ |MG| DZ |  AZ  ||
 	public static double MODULEWID; // || DZ | AZ | DZ ||
+	public static double SECTORLEN;
 	
 	/**
 	 * Connects a DatabaseConstantProvider to CCDB with run 10 and default variation.
@@ -243,11 +244,14 @@ public class SVTConstants
 			MODULEWID = ACTIVESENWID + 2*DEADZNWID;
 			STRIPOFFSETWID = cp.getDouble(ccdbPath+"svt/stripStart", 0 );
 			LAYERGAPTHK = cp.getDouble(ccdbPath+"svt/layerGapThk", 0 ); // generated from fiducial analysis
-			// do not use the current material values in CCDB, which are for the original BST in GEMC
-			//double layerGapThk = MATERIALSBYNAME.get("rohacell")[1] + 2*(MATERIALSBYNAME.get("carbonFiber")[1] + MATERIALSBYNAME.get("busCable")[1] + MATERIALSBYNAME.get("epoxy")[1]); // construct from material thicknesses instead
+			PASSIVETHK = MATERIALDIMENSIONS.get("carbonFiber")[1] + MATERIALDIMENSIONS.get("busCable")[1] + MATERIALDIMENSIONS.get("epoxy")[1];
+			SECTORLEN = MATERIALDIMENSIONS.get("heatSink")[2] + MATERIALDIMENSIONS.get("rohacell")[2];
+			double layerGapThk = MATERIALDIMENSIONS.get("rohacell")[1] + 2*PASSIVETHK; // construct from material thicknesses instead
 			
-			//System.out.println("LAYERGAPTHK="+LAYERGAPTHK);
-			//System.out.println("layerGapThk="+layerGapThk);
+			
+			System.out.println("LAYERGAPTHK (CCDB)     ="+LAYERGAPTHK);
+			System.out.println("layerGapThk (MATERIALS)="+layerGapThk);
+			System.out.println("set LAYERGAPTHK to layerGapThk"); LAYERGAPTHK = layerGapThk;
 			
 			if( VERBOSE )
 			{
@@ -275,15 +279,15 @@ public class SVTConstants
 			// |                                               | sensor layer	  | 0.32 silicon thickness
 			// |                                               |				  |
 			// |                                      .--------+--------------^---v------------- module radius 1
-			// |                                      | carbon fibre etc	  |
+			// |                                      | passiveThk 			  |
 			// |------^-----------------^-------------+-----------------------|----------------- fiducial layer
-			// |      |   				|									  |
-			// |	  |					|									  |
-			// |      |   				| 2.50			rohacell			  | 3.236 layer gap
-			// |	  |	2.88			|									  |
-			// |      |         	    |									  |
+			// |      |   				|		|							  |
+			// |	  |		heatSink	|		|							  |
+			// |      |   				| 2.50	|		rohacell			  | 3.236 layer gap
+			// |	  |	2.88			|		|							  |
+			// |      |         	    |		|							  |
 			// |      |              +--v-------------+-----------------------|------------------ module radius 0
-			// |  	  |				 |                | carbon fibre etc	  |
+			// |  	  |				 |                | passiveThk			  |
 			// |      |				 |				  '---^----+--------------v-----^------------ radius CCDB
 			// |------v-------^------'					  |	   | 				    |						radius MechEng
 			// |              |                           |    | U (inner)			| 0.32 silicon thickness
@@ -301,7 +305,7 @@ public class SVTConstants
 				STATUS[region] = cp.getInteger(ccdbPath+"region/status", region );
 				Z0ACTIVE[region] = cp.getDouble(ccdbPath+"region/zStart", region ); // Cu edge of hybrid sensor's active volume
 				REFRADIUS[region] = cp.getDouble(ccdbPath+"region/UlayerOuterRadius", region); // radius to outer side of U (inner) module
-				SUPPORTRADIUS[region] = cp.getDouble(ccdbPath+"region/CuSupportInnerRadius", region); // radius to inner side of copper support piece
+				SUPPORTRADIUS[region] = cp.getDouble(ccdbPath+"region/CuSupportInnerRadius", region); // radius to inner side of heatSinkRidge
 				
 				for( int m = 0; m < NMODULES; m++ )
 				{
@@ -365,6 +369,7 @@ public class SVTConstants
 				System.out.printf("MODULEWID       %8.3f\n", MODULEWID );
 				System.out.printf("MODULELEN       %8.3f\n", MODULELEN );
 				System.out.printf("LAYERGAPTHK     %8.3f\n", LAYERGAPTHK );
+				System.out.printf("PASSIVETHK      %8.3f\n", PASSIVETHK );
 				System.out.printf("FIDCUX          %8.3f\n", FIDCUX );
 				System.out.printf("FIDPKX          %8.3f\n", FIDPKX );
 				System.out.printf("FIDORIGINZ      %8.3f\n", FIDORIGINZ );

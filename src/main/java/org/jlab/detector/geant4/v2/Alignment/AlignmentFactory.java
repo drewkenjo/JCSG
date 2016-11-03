@@ -20,7 +20,7 @@ import org.jlab.detector.geant4.v2.Misc.Util;
  * Universal class for processing and applying alignment shifts to points and volumes.
  * 
  * @author pdavies
- * @version 0.2.3
+ * @version 1.0.0
  */
 public class AlignmentFactory
 {
@@ -305,7 +305,7 @@ public class AlignmentFactory
 	 * @param aScaleR a scale factor for the rotation shift
 	 * @throws IllegalArgumentException incorrect number of elements in shift array
 	 */
-	/*public static void applyShift( Vector3d aPoint, double[] aShift, Vector3d aCenter, double aScaleT, double aScaleR ) throws IllegalArgumentException
+	public static void applyShift( Vector3d aPoint, double[] aShift, Vector3d aCenter, double aScaleT, double aScaleR ) throws IllegalArgumentException
 	{
 		if( aShift.length != NSHIFTDATARECLEN ){ throw new IllegalArgumentException("shift array must have "+NSHIFTDATARECLEN+" elements"); }
 		
@@ -349,7 +349,6 @@ public class AlignmentFactory
 			
 			System.setOut(dummyStream); // suppress unwanted debug output from Vector3d.rotate()
 			vecAxis.rotate( aPoint, ra );
-			Vector3D v = new Vector3D().rot
 			System.setOut(originalStream);
 			
 			//System.out.printf("PR: % 8.3f % 8.3f % 8.3f\n", aPoint.x, aPoint.y, aPoint.z );
@@ -364,7 +363,7 @@ public class AlignmentFactory
 		aPoint.set( aPoint.add( translationVec ) );
 		
 		if( VERBOSE ) System.out.printf("PS: % 8.3f % 8.3f % 8.3f\n", aPoint.x, aPoint.y, aPoint.z );
-	}*/
+	}
 	
 	
 	/**
@@ -377,7 +376,7 @@ public class AlignmentFactory
 	 * @param aScaleR a scale factor for the rotation shift
 	 * @throws IllegalArgumentException incorrect number of elements in shift array
 	 */
-	/*public static void applyShift( Geant4Basic aVol, double[] aShift, Vector3d aNominalCenter, double aScaleT, double aScaleR ) throws IllegalArgumentException
+	public static void applyShift( Geant4Basic aVol, double[] aShift, Vector3d aNominalCenter, double aScaleT, double aScaleR ) throws IllegalArgumentException
 	{
 		if( aShift.length != AlignmentFactory.NSHIFTDATARECLEN ){ throw new IllegalArgumentException("shift array must have "+AlignmentFactory.NSHIFTDATARECLEN+" elements"); }
 		
@@ -412,7 +411,7 @@ public class AlignmentFactory
 				vr[i] = new Vector3d( 0, 0, 1 ); break;
 			}
 			System.out.println("vector "+i+" matrix rotated"); Matrix.matMul( rotMatrix, new Matrix(3, 1, Util.toDoubleArray( vr[i] ) ) ).show();
-		}
+		}*/
 		
 		Vector3d vrs = new Vector3d( rx, ry, rz ).normalized();
 		Matrix shiftMatrix = Matrix.convertRotationAxisAngleToMatrix( new double[]{ vrs.x, vrs.y, vrs.z, ra } );
@@ -437,6 +436,6 @@ public class AlignmentFactory
 				vr[i] = new Vector3d( 0, 0, 1 ); break;
 			}
 			System.out.println("vector "+i+" matrix rotated"); Matrix.matMul( rotMatrix, new Matrix(3, 1, Util.toDoubleArray( vr[i] ) ) ).show();
-		}
-	}*/
+		}*/
+	}
 }
