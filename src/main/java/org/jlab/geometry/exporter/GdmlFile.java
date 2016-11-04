@@ -18,12 +18,24 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.jlab.detector.units.Measurement;
+import org.jlab.detector.units.SystemOfUnits.Length;
+import org.jlab.detector.volume.Geant4Basic;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.jlab.geom.geant.Geant4Basic;
+import eu.mihosoft.vrl.v3d.Vector3d;
+
+/**
+ * <h1> Exporter Utility </h1>
+ * 
+ * Writes a file in GDML format for a given Geant4Basic volume structure.
+ * 
+ * @author pdavies
+ * @version 1.0.0
+ */
 
 public class GdmlFile implements IGdmlExporter
 {
@@ -164,7 +176,7 @@ public class GdmlFile implements IGdmlExporter
 	
 	
 	
-	public void addPosition( String aName, double[] aPosition, String aUnits )
+	public void addPosition( String aName, Vector3d aPosition, String aUnits )
 	{
 		if( aName.isEmpty() )
 			throw new IllegalArgumentException("empty String aName");
@@ -175,9 +187,9 @@ public class GdmlFile implements IGdmlExporter
 		
 		Element position = mDoc.createElement("position");
 		position.setAttribute("name", aName );
-		position.setAttribute("x", Double.toString( aPosition[0] ) );
-		position.setAttribute("y", Double.toString( aPosition[1] ) );
-		position.setAttribute("z", Double.toString( aPosition[2] ) );
+		position.setAttribute("x", Double.toString( aPosition.x ) );
+		position.setAttribute("y", Double.toString( aPosition.y ) );
+		position.setAttribute("z", Double.toString( aPosition.z ) );
 		position.setAttribute("unit", aUnits );
 		mDefine.appendChild( position );
 		
@@ -332,23 +344,23 @@ public class GdmlFile implements IGdmlExporter
 		
 		// types defined here: http://gdml.web.cern.ch/GDML/doc/GDMLmanual.pdf
 		
-		double[] solParams = aSolid.getParameters();
+		List<Measurement> solParams = aSolid.getDimensions();
 		
 		switch( type )
 		{
 		case "box":
 			
-			if( solParams.length == 1 ) // cube
+			if( solParams.size() == 1 ) // cube
 			{
-				solid.setAttribute("x", Double.toString( solParams[0] ) );
-				solid.setAttribute("y", Double.toString( solParams[0] ) );
-				solid.setAttribute("z", Double.toString( solParams[0] ) );
+				solid.setAttribute("x", Double.toString( solParams.get(0).value ) );
+				solid.setAttribute("y", Double.toString( solParams.get(0).value ) );
+				solid.setAttribute("z", Double.toString( solParams.get(0).value ) );
 			}
-			else if( solParams.length == 3 )// regular cuboid
+			else if( solParams.size() == 3 )// regular cuboid
 			{
-				solid.setAttribute("x", Double.toString( solParams[0] ) );
-				solid.setAttribute("y", Double.toString( solParams[1] ) );
-				solid.setAttribute("z", Double.toString( solParams[2] ) );
+				solid.setAttribute("x", Double.toString( solParams.get(0).value ) );
+				solid.setAttribute("y", Double.toString( solParams.get(1).value ) );
+				solid.setAttribute("z", Double.toString( solParams.get(2).value ) );
 			}
 			else
 				throw new NullPointerException("incorrect number of parameters for type: \""+ type +"\"");
@@ -356,11 +368,11 @@ public class GdmlFile implements IGdmlExporter
 			
 		case "eltube": // cylinder along Z axis
 			
-			if( solParams.length == 3 )
+			if( solParams.size() == 3 )
 			{
-				solid.setAttribute("dx", Double.toString( solParams[0] ) );
-				solid.setAttribute("dy", Double.toString( solParams[1] ) );
-				solid.setAttribute("dz", Double.toString( solParams[2] ) );
+				solid.setAttribute("dx", Double.toString( solParams.get(0).value ) );
+				solid.setAttribute("dy", Double.toString( solParams.get(1).value ) );
+				solid.setAttribute("dz", Double.toString( solParams.get(2).value ) );
 			}
 			else
 				throw new NullPointerException("incorrect number of parameters for type: \""+ type +"\"");
@@ -368,21 +380,21 @@ public class GdmlFile implements IGdmlExporter
 			
 		case "orb": // sphere
 			
-			if( solParams.length == 1 )
-				solid.setAttribute("r", Double.toString( solParams[0] ));
+			if( solParams.size() == 1 )
+				solid.setAttribute("r", Double.toString( solParams.get(0).value ));
 			else
 				throw new NullPointerException("incorrect number of parameters for type: \""+ type +"\"");
 			break;
 			
 		case "tube": // hollow tube segment
 			
-			if( solParams.length == 5 )
+			if( solParams.size() == 5 )
 			{
-				solid.setAttribute("rmin", 	   Double.toString( solParams[0] ) );
-				solid.setAttribute("rmax", 	   Double.toString( solParams[1] ) );
-				solid.setAttribute("z",        Double.toString( solParams[2] ) );
-				solid.setAttribute("startphi", Double.toString( solParams[3] ) );
-				solid.setAttribute("deltaphi", Double.toString( solParams[4] ) );
+				solid.setAttribute("rmin", 	   Double.toString( solParams.get(0).value ) );
+				solid.setAttribute("rmax", 	   Double.toString( solParams.get(1).value ) );
+				solid.setAttribute("z",        Double.toString( solParams.get(2).value ) );
+				solid.setAttribute("startphi", Double.toString( solParams.get(3).value ) );
+				solid.setAttribute("deltaphi", Double.toString( solParams.get(4).value ) );
 				solid.setAttribute("aunit", mDesiredAngleUnit );
 			}
 			else
@@ -393,7 +405,7 @@ public class GdmlFile implements IGdmlExporter
 			throw new IllegalArgumentException("type: \""+ type +"\"");
 		}
 		
-		solid.setAttribute("lunit", aSolid.getUnits() );
+		solid.setAttribute("lunit", Length.unit() );
 		mSolids.appendChild( solid );
 		
 		if(mVerbose) { System.out.println("added solid \""+ solRef +"\""); }
@@ -533,18 +545,10 @@ public class GdmlFile implements IGdmlExporter
 		physvol.appendChild( volumeref );
 		
 		// /structure/volume/physvol/position
-		double[] pos = aSolid.getPosition();
-		boolean posAllZero = true;
+		Vector3d pos = aSolid.getLocalPosition();
 		
 		// no need to write a position tag if nothing moves
-		for( int i = 0; i < 3; i++)
-		{
-			if( pos[i] != 0.0 )
-			{
-				posAllZero = false;
-				break;
-			}
-		}
+		boolean posAllZero = ( pos.x == 0.0 && pos.y == 0.0 && pos.z == 0.0 );
 		
 		if( !posAllZero )
 		{
@@ -554,17 +558,17 @@ public class GdmlFile implements IGdmlExporter
 				Element position = mDoc.createElement( "position" );
 				//position.setAttribute( "name", "pos_"+ aSolid.getName() +"_in_"+ aParentName );
 				position.setAttribute( "name", "pos_"+ aSolid.getName() );
-				position.setAttribute("x", Double.toString( aSolid.getPosition()[0] ) );
-				position.setAttribute("y", Double.toString( aSolid.getPosition()[1] ) );
-				position.setAttribute("z", Double.toString( aSolid.getPosition()[2] ) );
-				position.setAttribute("unit", aSolid.getUnits() );
+				position.setAttribute("x", Double.toString( pos.x ) );
+				position.setAttribute("y", Double.toString( pos.y ) );
+				position.setAttribute("z", Double.toString( pos.z ) );
+				position.setAttribute("unit", Length.unit() );
 				physvol.appendChild( position );
 				break;
 				
 			case "global":
 				Element positionRef = mDoc.createElement( "positionref" );
 				String positionName = "pos_"+ aSolid.getName() +"_in_"+ aParentName;
-				this.addPosition( positionName, aSolid.getPosition(), aSolid.getUnits() );
+				this.addPosition( positionName, aSolid.getLocalPosition(), Length.unit() );
 				positionRef.setAttribute("ref", positionName );
 				physvol.appendChild( positionRef );
 				break;
@@ -575,7 +579,7 @@ public class GdmlFile implements IGdmlExporter
 		}
 		
 		// /structure/volume/physvol/rotation
-		double[] rot = aSolid.getRotation();
+		double[] rot = aSolid.getLocalRotation();
 		boolean rotAllZero = true;
 		
 		for( int i = 0; i < 3; i++) {
@@ -587,7 +591,7 @@ public class GdmlFile implements IGdmlExporter
 		
 		if( !rotAllZero ) // no need to write a blank line that doesn't do anything
 		{
-			double[] solRotation = aSolid.getRotation();
+			double[] solRotation = aSolid.getLocalRotation();
 			if( mDesiredAngleUnit == "deg" && mActualAngleUnit == "rad" )
 			{
 				for( int i = 0; i < 3; i++) { solRotation[i] = Math.toDegrees( solRotation[i] ); }
@@ -612,7 +616,7 @@ public class GdmlFile implements IGdmlExporter
 			case "global":
 				Element rotationRef = mDoc.createElement( "rotationref" );
 				String rotationName = "rot_"+ aSolid.getName() +"_in_"+ aParentName;
-				this.addRotation( rotationName, solRotation, aSolid.getRotationOrder(), mDesiredAngleUnit );
+				this.addRotation( rotationName, solRotation, aSolid.getLocalRotationOrder(), mDesiredAngleUnit );
 				rotationRef.setAttribute("ref", rotationName );
 				physvol.appendChild( rotationRef );
 				break;

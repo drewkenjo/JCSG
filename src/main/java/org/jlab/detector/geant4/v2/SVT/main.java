@@ -1,9 +1,11 @@
 package org.jlab.detector.geant4.v2.SVT;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
-import org.jlab.geom.geant.Geant4Basic;
-import org.jlab.geom.prim.Line3D;
+import org.jlab.detector.geant4.v2.Misc.Util;
+import org.jlab.detector.volume.Geant4Basic;
 import org.jlab.geometry.exporter.IGdmlExporter;
+import org.jlab.geometry.exporter.VolumeExporterFactory;
+import org.jlab.geometry.prim.Line3d;
 
 public class main {
 
@@ -49,10 +51,10 @@ public class main {
 				{
 					for( int strip = 0; strip < SVTConstants.NSTRIPS; strip+=32 ) // SVTConstants.NSTRIPS
 					{
-						Line3D stripLine = svtIdealStripFactory.getStrip( region, sector, module, strip );
+						Line3d stripLine = svtIdealStripFactory.getStrip( region, sector, module, strip );
 						//System.out.printf("r%ds%dm%ds%d ", region, sector, module, strip ); stripLine.show();
-						Geant4Basic stripVol = Util.createArrow("strip"+strip+"_m"+module+"_s"+sector+"_r"+region, stripLine.toVector(), stripArrowCapRadius, stripArrowPointerRadius, false, true, false ); // mm
-						stripVol.setPosition( stripLine.origin().x()*0.1, stripLine.origin().y()*0.1, stripLine.origin().z()*0.1 ); // mm->cm
+						Geant4Basic stripVol = Util.createArrow("strip"+strip+"_m"+module+"_s"+sector+"_r"+region, stripLine.end().minus(stripLine.origin()), stripArrowCapRadius, stripArrowPointerRadius, false, true, false ); // mm
+						stripVol.setPosition( stripLine.origin().times( 0.1 ) ); // mm->cm
 						//stripVol.setMother( svtIdealVolumeFactory.getMotherVolume() );
 						//System.out.println( stripVol.gemcString() );
 						//for( int c = 0; c < stripVol.getChildren().size(); c++ )

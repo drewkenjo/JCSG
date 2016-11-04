@@ -1,6 +1,6 @@
 package org.jlab.geometry.exporter;
 
-import org.jlab.geom.geant.Geant4Basic;
+import org.jlab.detector.volume.Geant4Basic;
 
 public interface IVolumeExporter
 {

@@ -737,11 +737,11 @@ public class SVTConstants
 	 * @param aFlip whether the transformation should append a rotation of 180 deg about the z axis
 	 * @return Transformation3D a sequence of transformations
 	 */
-	public static Transformation3D getStripFrame( boolean aFlip )
+	public static Transform getStripFrame( boolean aFlip )
 	{
-		Transformation3D stripFrame = new Transformation3D();
-		stripFrame.translateXYZ( -SVTConstants.ACTIVESENWID/2, 0, 0 ); // move to centre along x
-		if( aFlip ) { stripFrame.rotateZ( Math.toRadians(180) ); } // flip for U layer
+		Transform stripFrame = new Transform();
+		stripFrame.translate( -SVTConstants.ACTIVESENWID/2, 0, 0 ); // move to centre along x
+		if( aFlip ) { stripFrame.rotZ( Math.toRadians(180) ); } // flip for U layer
 		return stripFrame;
 	}
 	
