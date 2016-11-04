@@ -10,6 +10,7 @@ import org.jlab.detector.geant4.v2.Alignment.AlignmentFactory;
 import org.jlab.detector.geant4.v2.Misc.Util;
 import org.jlab.detector.volume.G4Box;
 import org.jlab.detector.volume.G4Tubs;
+import org.jlab.detector.volume.G4World;
 import org.jlab.detector.volume.Geant4Basic;
 import org.jlab.geometry.prim.Triangle3d;
 
@@ -116,7 +117,9 @@ public class SVTVolumeFactory
 		// default behaviour
 		setRange( 1, SVTConstants.NREGIONS, new int[]{ 1, 1, 1, 1 }, SVTConstants.NSECTORS, 1, SVTConstants.NMODULES ); // all regions, sectors, and modules
 		
-		Geant4Basic top = new G4Box("none", 0,0,0 );
+		motherVol = new G4Tubs("svt", 0, SVTConstants.LAYERRADIUS[regionMax-1][1]*0.1, (SVTConstants.SECTORLEN*1.5)*0.1, 0, 360 );
+		
+		Geant4Basic top = new G4World("none");
 		motherVol.setMother( top );
 	}
 	
@@ -180,8 +183,6 @@ public class SVTVolumeFactory
 		System.out.println("build passive materials ? "+ BUILDPASSIVES );
 		System.out.println("include physical sensors ? "+ BUILDSENSORS );
 		if( BUILDSENSORS ) System.out.println("include sensor active and dead zones ? "+ BUILDSENSORZONES );
-		
-		motherVol = new G4Tubs("svt", 0, SVTConstants.LAYERRADIUS[regionMax-1][1]*0.1, (SVTConstants.SECTORLEN*1.5)*0.1, 0, 360 );
 		
 		for( int region = regionMin-1; region < regionMax; region++ ) // NREGIONS
 		{

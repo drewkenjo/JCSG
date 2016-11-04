@@ -221,6 +221,7 @@ public class SVTConstants
 					 "epoxyMinor",
 					 "wirebond",
 					 "pitchAdaptor",
+					 "pcBoardAndChips",
 					 "pcBoard",
 					 "chip",
 					 "rail",
