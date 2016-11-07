@@ -30,36 +30,8 @@ public class Tube implements Primitive {
 	@Override
 	public List<Polygon> toPolygons()
 	{
-		// copied from Box.java for now
-		int[][][] facenorm = {
-	            // position     // normal
-	            {{0, 4, 6, 2}, {-1, 0, 0}},
-	            {{1, 3, 7, 5}, {+1, 0, 0}},
-	            {{0, 1, 5, 4}, {0, -1, 0}},
-	            {{2, 6, 7, 3}, {0, +1, 0}},
-	            {{0, 2, 3, 1}, {0, 0, -1}},
-	            {{4, 5, 7, 6}, {0, 0, +1}}
-	        };
-
 	        List<Polygon> polygons = new ArrayList<>();
-	        for (int[][] face : facenorm) {
-	            List<Vertex> vertices = new ArrayList<>();
-	            for (int ivert : face[0]) {
-	                Vector3d vpos = new Vector3d(
-	                		pDr1 * (2 * Math.min(1, ivert & 1) - 1),
-	                		pDr2 * (2 * Math.min(1, ivert & 2) - 1),
-	                        pDz * (2 * Math.min(1, ivert & 4) - 1)
-	                );
-
-	                vertices.add(new Vertex(vpos, new Vector3d(
-	                        (double) face[1][0],
-	                        (double) face[1][1],
-	                        (double) face[1][2]
-	                )));
-	            }
-	            polygons.add(new Polygon(vertices, properties));
-	        }
-
+	        // just returns something to not cause a NullPointerException
 	        return polygons;
 	}
 
