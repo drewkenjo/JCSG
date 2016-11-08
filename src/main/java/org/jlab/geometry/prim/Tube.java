@@ -6,8 +6,12 @@ import java.util.List;
 import eu.mihosoft.vrl.v3d.Polygon;
 import eu.mihosoft.vrl.v3d.Primitive;
 import eu.mihosoft.vrl.v3d.PropertyStorage;
-import eu.mihosoft.vrl.v3d.Vector3d;
-import eu.mihosoft.vrl.v3d.Vertex;
+
+/**
+ * 
+ * @author pdavies
+ *
+ */
 
 public class Tube implements Primitive {
 

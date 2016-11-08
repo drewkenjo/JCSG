@@ -3,6 +3,7 @@ package org.jlab.detector.geant4.v2.SVT;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider; // coatjava-3.0
 import org.jlab.geom.base.ConstantProvider;
@@ -31,7 +32,7 @@ import org.jlab.detector.geant4.v2.Misc.Util;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.0
+ * @version 1.0.2
  */
 public class SVTConstants
 {
@@ -56,6 +57,7 @@ public class SVTConstants
 	public static int NMODULES; // number of modules in a sector
 	public static int NSENSORS; // number of sensors in a module
 	public static int NSTRIPS; // number of strips in a layer
+	public static int NPADS; // number of pads on High Voltage Rail
 	public static double STRIPOFFSETWID; // offset of first intermediate sensor strip from edge of active zone
 	public static double READOUTPITCH; // distance between start of strips along front of hybrid sensor
 	public static double STEREOANGLE; // total angle swept by sensor strips
@@ -90,7 +92,8 @@ public class SVTConstants
 	//
 	// dimensions of passive materials
 	public static int NMATERIALS;
-	public static HashMap< String, double[] > MATERIALDIMENSIONS = new LinkedHashMap<>();
+	public static HashMap<String, String> MATERIALTYPES = new LinkedHashMap<>();
+	public static HashMap<String, double[]> MATERIALDIMENSIONS = new LinkedHashMap<>();
 	public static double PASSIVETHK;
 	//
 	// calculated on load()
@@ -123,7 +126,8 @@ public class SVTConstants
 		cp.loadTable( ccdbPath +"region");
 		cp.loadTable( ccdbPath +"support");
 		cp.loadTable( ccdbPath +"fiducial");
-		cp.loadTable( ccdbPath +"material");
+		cp.loadTable( ccdbPath +"material/box");
+		cp.loadTable( ccdbPath +"material/tube");
 		if( loadAlignmentTable ) cp.loadTable( ccdbPath +"alignment");
 		//if( loadAlignmentTables ) cp.loadTable( ccdbPath +"alignment/sector");
 		//if( loadAlignmentTables ) cp.loadTable( ccdbPath +"alignment/layer");
@@ -175,6 +179,7 @@ public class SVTConstants
 			NSENSORS = cp.getInteger( ccdbPath+"svt/nSensors", 0 );
 			NSTRIPS = cp.getInteger( ccdbPath+"svt/nStrips", 0 );
 			NFIDUCIALS = cp.getInteger( ccdbPath+"svt/nFiducials", 0 );
+			NPADS = cp.getInteger( ccdbPath+"svt/nPads", 0 );
 			
 			READOUTPITCH = cp.getDouble( ccdbPath+"svt/readoutPitch", 0 );
 			STEREOANGLE = Math.toRadians(cp.getDouble( ccdbPath+"svt/stereoAngle", 0 ));
@@ -200,43 +205,68 @@ public class SVTConstants
 			
 			// read constants from materials table
 			NMATERIALS = 14; // number of unique materials, not length of materialNames
+					
+			// cannot read String variables from CCDB, so put them here in order
+			MATERIALTYPES.put("heatSink", "box");
+			MATERIALTYPES.put("heatSinkCu", "box");
+			MATERIALTYPES.put("heatSinkRidge", "box");
+			MATERIALTYPES.put("rohacell", "box");
+			MATERIALTYPES.put("rohacellCu", "box");
+			MATERIALTYPES.put("plastic", "box");
+			MATERIALTYPES.put("plasticPk", "box");
+			MATERIALTYPES.put("carbonFiber", "box");
+			MATERIALTYPES.put("carbonFiberCu", "box");
+			MATERIALTYPES.put("carbonFiberPk", "box");
+			MATERIALTYPES.put("busCable", "box");
+			MATERIALTYPES.put("busCableCu", "box");
+			MATERIALTYPES.put("busCablePk", "box");
+			MATERIALTYPES.put("pitchAdaptor", "box");
+			MATERIALTYPES.put("pcBoardAndChips", "box");
+			MATERIALTYPES.put("pcBoard", "box");
+			MATERIALTYPES.put("chip", "box");
+			MATERIALTYPES.put("epoxyAndRailAndPads", "box");
+			MATERIALTYPES.put("epoxyMajorCu", "box");
+			MATERIALTYPES.put("epoxyMinorCu", "box");
+			MATERIALTYPES.put("epoxyMajorPk", "box");
+			MATERIALTYPES.put("epoxyMinorPk", "box");
+			MATERIALTYPES.put("rail", "box");
+			MATERIALTYPES.put("wirebond", "box");
+			MATERIALTYPES.put("kaptonWrapTapeSide", "box");
+			MATERIALTYPES.put("kaptonWrapTapeCap", "box");
+			MATERIALTYPES.put("kaptonWrapGlueSide", "box");
+			MATERIALTYPES.put("kaptonWrapGlueCap", "box");
 			
-			// cannot read String variables from CCDB, so put the names here 
-			String[] materialNames = new String[]
-					{"heatSink",
-					 "heatSinkCu",
-					 "heatSinkRidge",
-					 "rohacell",
-					 "rohacellCu",
-					 "plastic",
-					 "plasticPk",
-					 "carbonFiber",
-					 "carbonFiberCu",
-					 "carbonFiberPk",
-					 "busCable",
-					 "busCableCu",
-					 "busCablePk",
-					 "epoxy",
-					 "epoxyMajor",
-					 "epoxyMinor",
-					 "wirebond",
-					 "pitchAdaptor",
-					 "pcBoardAndChips",
-					 "pcBoard",
-					 "chip",
-					 "rail",
-					 "pad",
-					 "kaptonWrapTapeSide",
-					 "kaptonWrapTapeCap",
-					 "kaptonWrapGlueSide",
-					 "kaptonWrapGlueCap" };
+			MATERIALTYPES.put("pad", "tube");
 			
-			for( int m = 0; m < materialNames.length; m++ )
+			int boxNum = 0; // number of box types
+			int mat = 0;
+			for( Entry<String, String> entry : MATERIALTYPES.entrySet() )
 			{
-				double[] dimensions = new double[]{ cp.getDouble( ccdbPath+"material/wid", m ),
-											 		cp.getDouble( ccdbPath+"material/thk", m ),
-											 		cp.getDouble( ccdbPath+"material/len", m ) };
-				MATERIALDIMENSIONS.put( materialNames[m], dimensions );
+				String key = entry.getKey();
+				String value = entry.getValue();
+				double[] dimensions = null;
+				
+				if( value == "box" )
+				{
+					boxNum++;
+					dimensions = new double[]{
+							cp.getDouble( ccdbPath+"material/box/wid", mat ),
+							cp.getDouble( ccdbPath+"material/box/thk", mat ),
+							cp.getDouble( ccdbPath+"material/box/len", mat )
+							};
+				}
+				else if( value == "tube" ) // offset by boxNum to reset row for CCDB table
+				{
+					dimensions = new double[]{
+							cp.getDouble( ccdbPath+"material/tube/rmin", mat - boxNum ),
+							cp.getDouble( ccdbPath+"material/tube/rmax", mat - boxNum ),
+							cp.getDouble( ccdbPath+"material/tube/zlen", mat - boxNum ),
+							cp.getDouble( ccdbPath+"material/tube/phi0", mat - boxNum ),
+							cp.getDouble( ccdbPath+"material/tube/dphi", mat - boxNum )
+							};
+				}
+				MATERIALDIMENSIONS.put( key, dimensions );
+				mat++;
 			}
 			
 			
@@ -247,7 +277,7 @@ public class SVTConstants
 			MODULEWID = ACTIVESENWID + 2*DEADZNWID;
 			STRIPOFFSETWID = cp.getDouble(ccdbPath+"svt/stripStart", 0 );
 			LAYERGAPTHK = cp.getDouble(ccdbPath+"svt/layerGapThk", 0 ); // generated from fiducial analysis
-			PASSIVETHK = MATERIALDIMENSIONS.get("carbonFiber")[1] + MATERIALDIMENSIONS.get("busCable")[1] + MATERIALDIMENSIONS.get("epoxy")[1];
+			PASSIVETHK = MATERIALDIMENSIONS.get("carbonFiber")[1] + MATERIALDIMENSIONS.get("busCable")[1] + MATERIALDIMENSIONS.get("epoxyAndRailAndPads")[1];
 			SECTORLEN = MATERIALDIMENSIONS.get("heatSink")[2] + MATERIALDIMENSIONS.get("rohacell")[2];
 			double layerGapThk = MATERIALDIMENSIONS.get("rohacell")[1] + 2*PASSIVETHK; // construct from material thicknesses instead
 			
@@ -390,18 +420,21 @@ public class SVTConstants
 				System.out.printf("fidZDist0 %8.3f\n", fidZDist0 );
 				System.out.printf("fidZDist1 %8.3f\n", fidZDist1 );
 				
-				int maxStrLen = 19;
-				for( Map.Entry< String, double[] > entry : MATERIALDIMENSIONS.entrySet() )
+				int maxStrLenName = 32;
+				int maxStrLenType = 5;
+				for( Map.Entry<String, String> entryType : MATERIALTYPES.entrySet() )
 				{
-					String key = entry.getKey();
-					double[] value = entry.getValue();
-					String fmt = "%s %"+(maxStrLen - key.length())+"s";
-					System.out.printf(fmt, key, "" );
-					for( int i = 0; i < value.length; i++ )
-						System.out.printf("%8.3f ", value[i] );
+					String name = entryType.getKey();
+					String type = entryType.getValue();
+					double[] dimensions = MATERIALDIMENSIONS.get( name );
+					String fmt = "%s %"+(maxStrLenName - name.length())+"s";
+					System.out.printf(fmt, name, "" );
+					fmt = "%s %"+(maxStrLenType - type.length())+"s";
+					System.out.printf(fmt, type, "" );
+					for( int i = 0; i < dimensions.length; i++ )
+						System.out.printf("%8.3f ", dimensions[i] );
 					System.out.println();
 				}
-				System.out.printf("total length of MATERIALDIMENSIONS: %d\n", materialNames.length );
 			}
 		}
 	}

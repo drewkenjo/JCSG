@@ -4,14 +4,20 @@ import org.jlab.detector.units.SystemOfUnits.Angle;
 import org.jlab.detector.units.SystemOfUnits.Length;
 import org.jlab.geometry.prim.Tube;
 
+/**
+ * 
+ * @author pdavies
+ *
+ */
+
 public class G4Tubs extends Geant4Basic {
 
-	public G4Tubs( String name, double innerRadius, double outerRadius, double length, double startPhi, double deltaPhi )
+	public G4Tubs( String name, double rmin, double rmax, double zlen, double phi0, double dphi )
 	{
-		super( new Tube( innerRadius, outerRadius, length, startPhi, deltaPhi ) );
+		super( new Tube( rmin, rmax, zlen, phi0, dphi ) );
 		setName( name );
 		setType("Tube");
-		setDimensions( Length.value(innerRadius), Length.value(outerRadius), Length.value(length), Angle.value(startPhi), Angle.value(deltaPhi) );
+		setDimensions( Length.value(rmin), Length.value(rmax), Length.value(zlen), Angle.value(phi0), Angle.value(dphi) );
 	}
 
 }

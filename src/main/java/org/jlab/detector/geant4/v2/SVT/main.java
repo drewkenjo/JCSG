@@ -99,8 +99,8 @@ public class main {
 		gdmlFile.setRotationLoc("local");
 		gdmlFile.addTopVolume( svtIdealVolumeFactory.getMotherVolume() );
 		
-		gdmlFile.addMaterialPreset("mat_hide", "mat_vacuum");
-		gdmlFile.addMaterialPreset("mat_half", "mat_vacuum");
+		gdmlFile.addMaterialPreset("mat_hide", "mat_vacuum"); // use to hide dummy/container volumes
+		gdmlFile.addMaterialPreset("mat_half", "mat_vacuum"); // use for debugging
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSink", "materialref", "ref", "mat_hide");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSinkCu", "materialref", "ref", "mat_vacuum");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSinkRidge", "materialref", "ref", "mat_vacuum");
@@ -111,9 +111,15 @@ public class main {
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_busCableCu", "materialref", "ref", "mat_vacuum");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_busCablePk", "materialref", "ref", "mat_vacuum");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_pcBoardAndChips", "materialref", "ref", "mat_hide");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_half");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_half");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_half");
+		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_epoxyAndRailAndPads", "materialref", "ref", "mat_hide");
+		
+		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_half");
+		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_half");
+		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_half");
+		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_hide");
+		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_hide");
+		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_hide");
+		
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "arrow0", "materialref", "ref", "mat_hide");
 		
 		gdmlFile.writeFile("SVTFactory_ideal");
