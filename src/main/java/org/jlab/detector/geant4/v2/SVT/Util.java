@@ -1,4 +1,4 @@
-package org.jlab.detector.geant4.v2.Misc;
+package org.jlab.detector.geant4.v2.SVT;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,6 +15,7 @@ import org.jlab.detector.volume.G4Box;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.G4World;
 import org.jlab.detector.volume.Geant4Basic;
+import org.jlab.geometry.prim.Line3d;
 
 import eu.mihosoft.vrl.v3d.Vector3d;
 
@@ -31,7 +32,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class Util
 {
@@ -276,6 +277,28 @@ public class Util
 	}
 	
 	
+	public static Geant4Basic createArrow( String aName, Line3d aLine, double aCapRadius, double aPointerRadius, boolean aDisplayCapStart, boolean aDisplayPointer, boolean aDisplayCapEnd )
+	{
+		Vector3d pointer = aLine.end().minus(aLine.origin());
+		//System.out.printf("arrow vector x=% 8.3f y=% 8.3f z=% 8.3f mag=% 8.3f\n", pointer.x, pointer.y, pointer.z, pointer.magnitude() );
+		
+		Geant4Basic arrowVol = createArrow( aName, pointer.magnitude(), aCapRadius, aPointerRadius, aDisplayCapStart, aDisplayPointer, aDisplayCapEnd );
+		
+		//double theta = ( pointer.magnitude() < 2e-6 ) ? 1.0 : Math.acos(pointer.z/pointer.magnitude());
+		//double phi = Math.atan2(pointer.y, pointer.x);
+		double[] eulerAngles = Util.convertRotationVectorToGeant( pointer.theta(), pointer.phi() );
+		arrowVol.rotate("xyz", -eulerAngles[0], -eulerAngles[1], -eulerAngles[2] );
+		
+		//System.out.println("theta="+Math.toDegrees(theta));
+		//System.out.println("phi="+Math.toDegrees(phi));
+		//System.out.printf("euler=%8.3f %8.3f %8.3f\n", Math.toDegrees(eulerAngles[0]), Math.toDegrees(eulerAngles[1]), Math.toDegrees(eulerAngles[2]) );
+
+		arrowVol.setPosition( aLine.origin().add( pointer.dividedBy(2) ).times( 0.1 ) ); // mm->cm
+		
+		return arrowVol;
+	}
+	
+	
 	/**
 	 * Creates a cylinder, capped with two spheres, pointing in the direction of the given vector.
 	 * Length of cylinder is equal to magnitude of vector.
@@ -289,35 +312,32 @@ public class Util
 	 * @param aDisplayCapEnd switch to show end cap
 	 * @return Geant4Basic pseudo volume containing arrow components
 	 */
-	public static Geant4Basic createArrow( String aName, Vector3d aVec,
+	public static Geant4Basic createArrow( String aName, double aLen,
 			double aCapRadius, double aPointerRadius, boolean aDisplayCapStart, boolean aDisplayPointer, boolean aDisplayCapEnd )
 	{
-		Geant4Basic arrowVol = new G4World(aName+"_arrow0"); // container
 		// put cap at base of vector, with arrow pointing in direction of vector, and optional second cap at end of arrow
+		// pointer is exact length of vector
+		// caps are cubes with internal edges butted against pointer
 		
-		//System.out.printf("arrow vector x=% 8.3f y=% 8.3f z=% 8.3f mag=% 8.3f\n", aVec.x(), aVec.y(), aVec.z(), aVec.mag() );
+		double containerRadius = aCapRadius > aPointerRadius ? aCapRadius : aPointerRadius;
+		Geant4Basic arrowVol = new G4Box(aName+"_arrow0", containerRadius*0.1, containerRadius*0.1, (aLen + 2*aCapRadius)*0.1 );
 		
 		if( aDisplayCapStart )
 		{
 			Geant4Basic capStartVol = new G4Box( aName+"_arrow1", aCapRadius*0.1, aCapRadius*0.1, aCapRadius*0.1 );
-			capStartVol.setMother( arrowVol ); // origin of a Line3D
+			capStartVol.setMother( arrowVol );
+			capStartVol.translate( 0, 0, -(aLen/2 + aCapRadius/2)*0.1 );
 		}
 		if( aDisplayPointer )
 		{
-			Geant4Basic pointerVol = new G4Tubs( aName+"_arrow2", 0, aPointerRadius*0.1, aVec.magnitude()/2*0.1, 0, 360 );
+			Geant4Basic pointerVol = new G4Tubs( aName+"_arrow2", 0, aPointerRadius*0.1, aLen*0.1, 0, 360 );
 			pointerVol.setMother( arrowVol );
-			
-			double[] eulerAngles = Util.convertRotationVectorToGeant( aVec.magnitude() < 2e-6 ? 1.0 : Math.acos(aVec.magnitude()/aVec.z), Math.atan2(aVec.y, aVec.x) ); // theta, phi
-			pointerVol.rotate("xyz", -eulerAngles[0], -eulerAngles[1], -eulerAngles[2] );
-			
-			// shift centre of geometry of arrow to put first end at start ball
-			pointerVol.translate( aVec.dividedBy(2).x*0.1, aVec.dividedBy(2).y*0.1, aVec.dividedBy(2).z*0.1 );
 		}
 		if( aDisplayCapEnd )
 		{
 			Geant4Basic capEndVol = new G4Box( aName+"_arrow3", aCapRadius*0.1, aCapRadius*0.1, aCapRadius*0.1 );
-			capEndVol.translate( aVec.x*0.1, aVec.y*0.1, aVec.z*0.1 );
 			capEndVol.setMother( arrowVol );
+			capEndVol.translate( 0, 0, (aLen/2 + aCapRadius/2)*0.1 );
 		}
 		
 		return arrowVol;
@@ -476,8 +496,15 @@ public class Util
 	{
 		Vector3d p = aVol.getLocalPosition();
 		Vector3d s = new Vector3d( aShiftX, aShiftY, aShiftZ );
-		Vector3d v = p.add(s);
+		
+		//System.out.println("shiftPosition");
+		//System.out.println("p="+p.toString());
+		//System.out.println("s="+s.toString());
+		Vector3d v = p.clone().add(s);
+		//System.out.println("v="+v.toString());
+		
 		aVol.translate( v.minus(p) );
+		//System.out.println("l="+aVol.getLocalPosition());
 	}
 	
 	

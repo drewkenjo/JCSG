@@ -7,12 +7,8 @@ import java.util.Map.Entry;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider; // coatjava-3.0
 import org.jlab.geom.base.ConstantProvider;
-import org.jlab.geom.prim.Transformation3D;
 
 import eu.mihosoft.vrl.v3d.Transform;
-
-import org.jlab.detector.geant4.v2.Alignment.AlignmentFactory;
-import org.jlab.detector.geant4.v2.Misc.Util;
 
 /**
  * <h1> Geometry for the SVT </h1>
@@ -32,7 +28,7 @@ import org.jlab.detector.geant4.v2.Misc.Util;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.2
+ * @version 1.0.4
  */
 public class SVTConstants
 {
@@ -403,6 +399,7 @@ public class SVTConstants
 				System.out.printf("MODULELEN       %8.3f\n", MODULELEN );
 				System.out.printf("LAYERGAPTHK     %8.3f\n", LAYERGAPTHK );
 				System.out.printf("PASSIVETHK      %8.3f\n", PASSIVETHK );
+				System.out.printf("SECTORLEN       %8.3f\n", SECTORLEN );
 				System.out.printf("FIDCUX          %8.3f\n", FIDCUX );
 				System.out.printf("FIDPKX          %8.3f\n", FIDPKX );
 				System.out.printf("FIDORIGINZ      %8.3f\n", FIDORIGINZ );
@@ -758,9 +755,9 @@ public class SVTConstants
 		//								|
 		//								|
 		
-		double phi = -2.0*Math.PI/NSECTORS[aRegion]*aSector + PHI0;
+		double phi = -2.0*Math.PI/NSECTORS[aRegion]*aSector - PHI0;
 		Transform labFrame = new Transform();
-		labFrame.rotZ( -SECTOR0 ).translate( aRadius, 0, aZ ).rotZ( phi );
+		labFrame.rotZ( phi ).translate( aRadius, 0, aZ ).rotZ( -SECTOR0 );
 		return labFrame;
 	}
 	
@@ -774,8 +771,8 @@ public class SVTConstants
 	public static Transform getStripFrame( boolean aFlip )
 	{
 		Transform stripFrame = new Transform();
+		if( aFlip ) { stripFrame.rotZ( Math.PI ); } // flip for U layer
 		stripFrame.translate( -SVTConstants.ACTIVESENWID/2, 0, 0 ); // move to centre along x
-		if( aFlip ) { stripFrame.rotZ( Math.toRadians(180) ); } // flip for U layer
 		return stripFrame;
 	}
 	

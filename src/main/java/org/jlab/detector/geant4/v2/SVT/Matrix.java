@@ -1,4 +1,4 @@
-package org.jlab.detector.geant4.v2.Misc;
+package org.jlab.detector.geant4.v2.SVT;
 
 /**
  * <h1> Geometry Base </h1>

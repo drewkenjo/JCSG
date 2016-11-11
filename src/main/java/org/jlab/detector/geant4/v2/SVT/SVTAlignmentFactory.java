@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.Writer;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
-import org.jlab.detector.geant4.v2.Alignment.AlignmentFactory;
-import org.jlab.detector.geant4.v2.Misc.Util;
 import org.jlab.detector.volume.Geant4Basic;
 import org.jlab.geometry.prim.Triangle3d;
 

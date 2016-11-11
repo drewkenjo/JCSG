@@ -674,4 +674,20 @@ public class Vector3d {
 	public Vector3d midpoint(Vector3d point) {
 		return lerp( point, 0.5 );
 	}
+	
+	/**	
+	 * @return theta elevation (angle between vector and z axis)
+	 * @author pdavies
+	 */
+	public double theta(){
+		return ( this.magnitude() < 2e-6 ) ? 1.0 : Math.acos(this.z/this.magnitude()); // special case at mag = 0
+	}
+	
+	/**
+	 * @return phi azimuth (angle between projection onto xy plane and x axis) 
+	 * @author pdavies
+	 */
+	public double phi(){
+		return Math.atan2(this.y, this.x);
+	}
 }

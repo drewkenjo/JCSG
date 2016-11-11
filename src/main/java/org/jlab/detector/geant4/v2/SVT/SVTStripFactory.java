@@ -1,7 +1,6 @@
 package org.jlab.detector.geant4.v2.SVT;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
-import org.jlab.detector.geant4.v2.Alignment.AlignmentFactory;
 import org.jlab.geometry.prim.Line3d;
 
 import eu.mihosoft.vrl.v3d.Transform;
@@ -25,7 +24,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class SVTStripFactory
 {
