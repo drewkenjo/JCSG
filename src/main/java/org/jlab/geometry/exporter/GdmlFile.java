@@ -37,7 +37,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * @version 1.0.0
  */
 
-public class GdmlFile implements IGdmlExporter
+public class GdmlFile implements GdmlExporter
 {
 	private DocumentBuilderFactory mDocFactory;
 	private DocumentBuilder mDocBuilder;

@@ -6,7 +6,7 @@ import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.detector.volume.G4Box;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.Geant4Basic;
-import org.jlab.geometry.exporter.IGdmlExporter;
+import org.jlab.geometry.exporter.GdmlExporter;
 import org.jlab.geometry.exporter.VolumeExporterFactory;
 import org.jlab.geometry.prim.Line3d;
 import org.jlab.geometry.prim.Triangle3d;
@@ -169,7 +169,7 @@ public class main {
 		
 		System.out.println( svtIdealVolumeFactory.toString() );
 		
-		IGdmlExporter gdmlFile = VolumeExporterFactory.createGdmlFactory();
+		GdmlExporter gdmlFile = VolumeExporterFactory.createGdmlFactory();
 		//gdmlFile.setVerbose( true ); // not useful for large numbers of volumes
 		gdmlFile.setPositionLoc("local");
 		gdmlFile.setRotationLoc("local");

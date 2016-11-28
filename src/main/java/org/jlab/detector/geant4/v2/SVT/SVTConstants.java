@@ -105,9 +105,8 @@ public class SVTConstants
 	
 	/**
 	 * Connects a DatabaseConstantProvider to CCDB with run 10 and default variation.
-	 * Will be moved to DatabaseLoader at a later date.
 	 * 
-	 * @param loadAlignmentTable a switch to load the tables containing alignment shifts for sectors and layers
+	 * @param loadAlignmentTable a switch to load the tables containing alignment shifts for sectors
 	 * 
 	 * @return ConstantProvider a ConstantProvider that has loaded the necessary tables
 	 */

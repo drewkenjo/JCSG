@@ -4,7 +4,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class VolumeExporterFactory
 {
-	public static IGdmlExporter createGdmlFactory() throws IllegalArgumentException
+	public static GdmlExporter createGdmlFactory() throws IllegalArgumentException
 	{
 		try {
 			return new GdmlFile();

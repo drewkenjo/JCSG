@@ -1,6 +1,6 @@
 package org.jlab.geometry.exporter;
 
-public interface IGdmlExporter extends IVolumeExporter
+public interface GdmlExporter extends VolumeExporter
 {
 	public void setPositionLoc( String aLoc );
 	public void setRotationLoc( String aLoc );

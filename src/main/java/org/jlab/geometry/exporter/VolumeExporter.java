@@ -2,7 +2,7 @@ package org.jlab.geometry.exporter;
 
 import org.jlab.detector.volume.Geant4Basic;
 
-public interface IVolumeExporter
+public interface VolumeExporter
 {
 	public void setVerbose( boolean aBool );
 	
