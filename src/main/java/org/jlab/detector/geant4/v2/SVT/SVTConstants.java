@@ -28,7 +28,7 @@ import eu.mihosoft.vrl.v3d.Transform;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class SVTConstants
 {

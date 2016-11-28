@@ -91,16 +91,6 @@ public abstract class Geant4Basic {
         updateCSGtransformation();
     }
 
-    public void setColor1(int rgbR, int rgbG, int rgbB) {
-        rgb[0] = rgbR;
-        rgb[1] = rgbG;
-        rgb[2] = rgbB;
-    }
-
-    public int[] getColor1() {
-        return rgb;
-    }
-
     public Geant4Basic getMother() {
         return this.motherVolume;
     }
@@ -147,11 +137,6 @@ public abstract class Geant4Basic {
         return globalTransform;
     }
 
-    protected void afterCSGtransformation() {
-    }
-
-    ;
-    
     protected final void updateCSGtransformation() {
         children.stream()
                 .forEach(child -> child.updateCSGtransformation());
@@ -159,8 +144,6 @@ public abstract class Geant4Basic {
         if (volumeSolid != null) {
             volumeCSG = volumeSolid.toCSG().transformed(getGlobalTransform());
         }
-
-        afterCSGtransformation();
     }
 
     public Geant4Basic translate(double x, double y, double z) {
@@ -260,7 +243,7 @@ public abstract class Geant4Basic {
 
     public String gemcStringRecursive() {
         StringBuilder str = new StringBuilder();
-        if(!isAbstract()){
+        if (!isAbstract()) {
             str.append(gemcString());
             str.append(System.getProperty("line.separator"));
         }
@@ -283,6 +266,12 @@ public abstract class Geant4Basic {
         return children.stream()
                 .flatMap(child -> child.getComponents().stream())
                 .collect(Collectors.toList());
+    }
+
+    //returns original component before transformation (important for STL volumes)
+    //use it to export volumes to STL files before transformation for GEMC
+    public Primitive getPrimitive(){
+        return volumeSolid;
     }
 
     public List<DetHit> getIntersections(Straight line) {
@@ -323,6 +312,16 @@ public abstract class Geant4Basic {
             }
         }
         return hits;
+    }
+
+    public Line3d getLineX() {
+        throw new UnsupportedOperationException("Not implemented for that particular volume class, YET...");
+        //return new Line3d(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0));
+    }
+
+    public Line3d getLineY() {
+        throw new UnsupportedOperationException("Not implemented for that particular volume class, YET...");
+        //return new Line3d(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0));
     }
 
     public Line3d getLineZ() {
@@ -366,4 +365,10 @@ public abstract class Geant4Basic {
 		}
 		
 	}
+	
+	public Vector3d getLocal(Vector3d vec) {
+        Transform trans = getGlobalTransform().invert();
+        return trans.transform(vec.clone());
+        //return new Line3d(new Vector3d(0, 0, 0), new Vector3d(0, 0, 0));
+    }
 }
