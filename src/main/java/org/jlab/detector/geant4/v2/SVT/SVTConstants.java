@@ -28,7 +28,7 @@ import eu.mihosoft.vrl.v3d.Transform;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.5
+ * @version 1.0.6
  */
 public class SVTConstants
 {
@@ -78,7 +78,7 @@ public class SVTConstants
 	public static double ACTIVESENWID;
 	public static double PHYSSENWID;
 	public static double DEADZNWID;
-	//NSENSORS*PHYS
+	//
 	public static double SILICONTHK;
 	//
 	public static double PHYSSENLEN;

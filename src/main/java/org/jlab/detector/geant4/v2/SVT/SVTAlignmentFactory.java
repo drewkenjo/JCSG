@@ -16,7 +16,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Processes fiducial survey data into alignment shifts, and applies those shifts to a given point or volume.
  * 
  * @author pdavies
- * @version 1.0.0
+ * @version 1.0.6
  */
 public class SVTAlignmentFactory
 {
@@ -342,14 +342,14 @@ public class SVTAlignmentFactory
 		
 		switch( aFid )
 		{
-		case 0: // Cu +
-			fidPos.set( SVTConstants.FIDCUX, 0.0, -SVTConstants.FIDCUZ );
-			break;
-		case 1: // Cu -
+		case 0: // Cu -
 			fidPos.set( -SVTConstants.FIDCUX, 0.0, -SVTConstants.FIDCUZ );
 			break;
+		case 1: // Cu +
+			fidPos.set( SVTConstants.FIDCUX, 0.0, -SVTConstants.FIDCUZ );
+			break;
 		case 2: // Pk
-			fidPos.set( -SVTConstants.FIDPKX, 0.0, SVTConstants.FIDPKZ0 + SVTConstants.FIDPKZ1 );
+			fidPos.set( SVTConstants.FIDPKX, 0.0, SVTConstants.FIDPKZ0 + SVTConstants.FIDPKZ1 );
 			break;
 		}
 		return fidPos;
