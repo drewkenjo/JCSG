@@ -311,13 +311,10 @@ public class AlignmentFactory
 		double rz = aShift[5];
 		double ra = aShift[6];
 		
-		//for( int i = 0; i < 3; i++ )
-			//aShift[i] = aScaleT/10.0*aShift[i]; // does this also change tx, ty ,tz?
-		
 		tx *= aScaleT;
 		ty *= aScaleT;
 		tz *= aScaleT;
-		ra  = aScaleR*ra;
+		ra *= aScaleR;
 		
 		if( VERBOSE )
 		{
@@ -334,16 +331,8 @@ public class AlignmentFactory
 			
 			//System.out.printf("PC: % 8.3f % 8.3f % 8.3f\n", aPoint.x, aPoint.y, aPoint.z );
 			
-			Vector3d vecAxis = new Vector3d( rx, ry, rz ).normalized();
-			//System.out.printf("SR: % 8.3f % 8.3f % 8.3f % 8.3f\n", vecAxis.x, vecAxis.y, vecAxis.z, Math.toDegrees(ra) );
-			
-			// http://stackoverflow.com/questions/8363493/hiding-system-out-print-calls-of-a-class
-			PrintStream originalStream = System.out;
-			PrintStream dummyStream    = new PrintStream( new OutputStream(){ public void write(int b) {} } );
-			
-			System.setOut(dummyStream); // suppress unwanted debug output from Vector3d.rotate()
+			Vector3d vecAxis = new Vector3d( rx, ry, rz ).normalized();			
 			vecAxis.rotate( aPoint, ra );
-			System.setOut(originalStream);
 			
 			//System.out.printf("PR: % 8.3f % 8.3f % 8.3f\n", aPoint.x, aPoint.y, aPoint.z );
 			

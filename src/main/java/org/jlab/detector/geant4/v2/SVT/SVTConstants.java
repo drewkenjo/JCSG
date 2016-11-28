@@ -78,7 +78,7 @@ public class SVTConstants
 	public static double ACTIVESENWID;
 	public static double PHYSSENWID;
 	public static double DEADZNWID;
-	//
+	//NSENSORS*PHYS
 	public static double SILICONTHK;
 	//
 	public static double PHYSSENLEN;
@@ -202,35 +202,35 @@ public class SVTConstants
 			// read constants from materials table
 			NMATERIALS = 14; // number of unique materials, not length of materialNames
 					
-			// cannot read String variables from CCDB, so put them here in order
-			MATERIALTYPES.put("heatSink", "box");
-			MATERIALTYPES.put("heatSinkCu", "box");
-			MATERIALTYPES.put("heatSinkRidge", "box");
-			MATERIALTYPES.put("rohacell", "box");
-			MATERIALTYPES.put("rohacellCu", "box");
-			MATERIALTYPES.put("plastic", "box");
-			MATERIALTYPES.put("plasticPk", "box");
-			MATERIALTYPES.put("carbonFiber", "box");
-			MATERIALTYPES.put("carbonFiberCu", "box");
-			MATERIALTYPES.put("carbonFiberPk", "box");
-			MATERIALTYPES.put("busCable", "box");
-			MATERIALTYPES.put("busCableCu", "box");
-			MATERIALTYPES.put("busCablePk", "box");
-			MATERIALTYPES.put("pitchAdaptor", "box");
-			MATERIALTYPES.put("pcBoardAndChips", "box");
-			MATERIALTYPES.put("pcBoard", "box");
-			MATERIALTYPES.put("chip", "box");
-			MATERIALTYPES.put("epoxyAndRailAndPads", "box");
-			MATERIALTYPES.put("epoxyMajorCu", "box");
-			MATERIALTYPES.put("epoxyMinorCu", "box");
-			MATERIALTYPES.put("epoxyMajorPk", "box");
-			MATERIALTYPES.put("epoxyMinorPk", "box");
-			MATERIALTYPES.put("rail", "box");
-			MATERIALTYPES.put("wirebond", "box");
+			// cannot read String variables from CCDB, so put them here in the correct order
+			MATERIALTYPES.put("heatSink", 			"box");
+			MATERIALTYPES.put("heatSinkCu", 		"box");
+			MATERIALTYPES.put("heatSinkRidge", 		"box");
+			MATERIALTYPES.put("rohacell", 			"box");
+			MATERIALTYPES.put("rohacellCu",			"box");
+			MATERIALTYPES.put("plastic", 			"box");
+			MATERIALTYPES.put("plasticPk", 			"box");
+			MATERIALTYPES.put("carbonFiber", 		"box");
+			MATERIALTYPES.put("carbonFiberCu", 		"box");
+			MATERIALTYPES.put("carbonFiberPk", 		"box");
+			MATERIALTYPES.put("busCable", 			"box");
+			MATERIALTYPES.put("busCableCu", 		"box");
+			MATERIALTYPES.put("busCablePk", 		"box");
+			MATERIALTYPES.put("pitchAdaptor", 		"box");
+			MATERIALTYPES.put("pcBoardAndChips", 	"box");
+			MATERIALTYPES.put("pcBoard", 			"box");
+			MATERIALTYPES.put("chip", 				"box");
+			MATERIALTYPES.put("epoxyAndRailAndPads","box");
+			MATERIALTYPES.put("epoxyMajorCu",       "box");
+			MATERIALTYPES.put("epoxyMinorCu",		"box");
+			MATERIALTYPES.put("epoxyMajorPk",		"box");
+			MATERIALTYPES.put("epoxyMinorPk",		"box");
+			MATERIALTYPES.put("rail",				"box");
+			MATERIALTYPES.put("wirebond",			"box");
 			MATERIALTYPES.put("kaptonWrapTapeSide", "box");
-			MATERIALTYPES.put("kaptonWrapTapeCap", "box");
-			MATERIALTYPES.put("kaptonWrapGlueSide", "box");
-			MATERIALTYPES.put("kaptonWrapGlueCap", "box");
+			MATERIALTYPES.put("kaptonWrapTapeCap", 	"box");
+			MATERIALTYPES.put("kaptonWrapGlueSide",	"box");
+			MATERIALTYPES.put("kaptonWrapGlueCap", 	"box");
 			
 			MATERIALTYPES.put("pad", "tube");
 			
@@ -272,15 +272,15 @@ public class SVTConstants
 			STRIPLENMAX = MODULELEN - 2*DEADZNLEN;
 			MODULEWID = ACTIVESENWID + 2*DEADZNWID;
 			STRIPOFFSETWID = cp.getDouble(ccdbPath+"svt/stripStart", 0 );
-			LAYERGAPTHK = cp.getDouble(ccdbPath+"svt/layerGapThk", 0 ); // generated from fiducial analysis
+			LAYERGAPTHK = cp.getDouble(ccdbPath+"svt/layerGapThk", 0 );
 			PASSIVETHK = MATERIALDIMENSIONS.get("carbonFiber")[1] + MATERIALDIMENSIONS.get("busCable")[1] + MATERIALDIMENSIONS.get("epoxyAndRailAndPads")[1];
 			SECTORLEN = MATERIALDIMENSIONS.get("heatSink")[2] + MATERIALDIMENSIONS.get("rohacell")[2];
 			double layerGapThk = MATERIALDIMENSIONS.get("rohacell")[1] + 2*PASSIVETHK; // construct from material thicknesses instead
 			
 			
-			System.out.println("LAYERGAPTHK (CCDB)     ="+LAYERGAPTHK);
-			System.out.println("layerGapThk (MATERIALS)="+layerGapThk);
-			System.out.println("set LAYERGAPTHK to layerGapThk"); LAYERGAPTHK = layerGapThk;
+			System.out.printf("LAYERGAPTHK (CCDB)      = % 8.3f\n", LAYERGAPTHK );
+			System.out.printf("layerGapThk (MATERIALS) = % 8.3f\n", layerGapThk );
+			LAYERGAPTHK = layerGapThk; System.out.println("set LAYERGAPTHK to layerGapThk");
 			
 			if( VERBOSE )
 			{
@@ -290,6 +290,7 @@ public class SVTConstants
 				System.out.printf("NSENSORS        %4d\n", NSENSORS );
 				System.out.printf("NSTRIPS         %4d\n", NSTRIPS );
 				System.out.printf("NFIDUCIALS      %4d\n", NFIDUCIALS );
+				System.out.printf("NPADS           %4d\n", NPADS );
 				System.out.println();
 			}
 			
@@ -713,7 +714,22 @@ public class SVTConstants
 	
 	
 	/**
-	 * Returns a transformation from the local frame to the lab frame, for the given parameters of a sector module.
+	 * Returns the azimuth angle from the x-axis for a given sector module.
+	 * 
+	 * @param aRegion an index starting from 0
+	 * @param aSector an index starting from 0
+	 * @return double an angle in radians
+	 */
+	public static double getPhi( int aRegion, int aSector )
+	{
+		if( aRegion < 0 || aRegion > NREGIONS-1 ){ throw new IllegalArgumentException("region out of bounds"); }
+		if( aSector < 0 || aSector > NSECTORS[aRegion]-1 ){ throw new IllegalArgumentException("sector out of bounds"); }
+		return -2.0*Math.PI/NSECTORS[aRegion]*aSector + PHI0;
+	}
+	
+	
+	/**
+	 * Returns a transformation from the local frame to the lab frame, for a given sector module.
 	 * 
 	 * @param aRegion an index starting from 0
 	 * @param aSector an index starting from 0
@@ -755,9 +771,9 @@ public class SVTConstants
 		//								|
 		//								|
 		
-		double phi = -2.0*Math.PI/NSECTORS[aRegion]*aSector - PHI0;
+		double phi = getPhi( aRegion, aSector );
 		Transform labFrame = new Transform();
-		labFrame.rotZ( phi ).translate( aRadius, 0, aZ ).rotZ( -SECTOR0 );
+		labFrame.rotZ( -phi ).translate( aRadius, 0, aZ ).rotZ( -SECTOR0 ); // change of sign for active/alibi -> passive/alias rotation
 		return labFrame;
 	}
 	

@@ -401,6 +401,14 @@ public class GdmlFile implements IGdmlExporter
 				throw new NullPointerException("incorrect number of parameters for type: \""+ type +"\"");
 			break;
 			
+		/*case "polyhedra": // pgon
+			
+			if( solParams.size() == 7 )
+			{
+				solid.setAttribute("", 	   Double.toString( solParams.get(0).value ) );
+			}
+			break;*/
+			
 		default:
 			throw new IllegalArgumentException("type: \""+ type +"\"");
 		}

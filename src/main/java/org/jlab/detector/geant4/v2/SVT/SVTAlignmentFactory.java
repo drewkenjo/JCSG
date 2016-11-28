@@ -302,8 +302,8 @@ public class SVTAlignmentFactory
 		Vector3d[] fidPos3Ds = new Vector3d[] { createFiducial(0), createFiducial(1), createFiducial(2) }; // relative to fiducial origin
 		
 		double fidOriginZ = SVTConstants.Z0ACTIVE[aRegion] - SVTConstants.DEADZNLEN - SVTConstants.FIDORIGINZ;
-		double copperWideThk = 2.880;
-		double radius = SVTConstants.SUPPORTRADIUS[aRegion] + copperWideThk;
+		double heatSinkTotalThk = SVTConstants.MATERIALDIMENSIONS.get("heatSink")[1];
+		double radius = SVTConstants.SUPPORTRADIUS[aRegion] + heatSinkTotalThk;
 		
 		Transform labFrame = SVTConstants.getLabFrame( aRegion, aSector, radius, fidOriginZ );
 		

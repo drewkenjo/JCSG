@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.detector.volume.G4Box;
+import org.jlab.detector.volume.G4Operation;
+import org.jlab.detector.volume.G4Pgon;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.G4World;
 import org.jlab.detector.volume.Geant4Basic;
@@ -33,7 +35,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class SVTVolumeFactory
 {
@@ -78,7 +80,14 @@ public class SVTVolumeFactory
 	 * Default: 0.0
 	 */
 	public double VOLSPACER = 0.0;
-		
+	
+	
+	/**
+	 * A switch to halve the dimensions of all boxes for geant4 format.
+	 * Default: false
+	 */
+	public boolean HALFBOXES = false;
+	
 	
 	
 	/**
@@ -100,7 +109,10 @@ public class SVTVolumeFactory
 		// default behaviour
 		setRange( 1, SVTConstants.NREGIONS, new int[]{ 1, 1, 1, 1 }, SVTConstants.NSECTORS, 1, SVTConstants.NMODULES ); // all regions, sectors, and modules
 		
-		motherVol = new G4Tubs("svt", 0, SVTConstants.LAYERRADIUS[regionMax-1][1]*0.1, (SVTConstants.SECTORLEN*1.5)*0.1, 0, 360 );
+		double rmax = SVTConstants.LAYERRADIUS[regionMax-1][1]*1.1;
+		double zlen = SVTConstants.SECTORLEN*1.5;
+		
+		motherVol = new G4Tubs("svt", 0, rmax*0.1, zlen*0.1, 0, 360 );
 		
 		Geant4Basic top = new G4World("none");
 		motherVol.setMother( top );
@@ -129,6 +141,7 @@ public class SVTVolumeFactory
 		}
 		parameters.put("nmodules", Integer.toString(SVTConstants.NMODULES) );
 		parameters.put("nsensors", Integer.toString(SVTConstants.NSENSORS) );
+		parameters.put("npads", Integer.toString(SVTConstants.NPADS) );
 		
 		parameters.put("bsensorzones", Integer.toString(BUILDSENSORZONES ? 1 : 0 ) );
 		parameters.put("bsensors", Integer.toString(BUILDSENSORS ? 1 : 0 ) );
@@ -190,6 +203,7 @@ public class SVTVolumeFactory
 		System.out.println("build passive materials ? "+ BUILDPASSIVES );
 		System.out.println("include physical sensors ? "+ BUILDSENSORS );
 		if( BUILDSENSORS ) System.out.println("include sensor active and dead zones ? "+ BUILDSENSORZONES );
+		System.out.println("halve dimensions of boxes ? "+ HALFBOXES );
 		
 		for( int region = regionMin-1; region < regionMax; region++ ) // NREGIONS
 		{
@@ -202,11 +216,6 @@ public class SVTVolumeFactory
 			
 			double zStartPhysical = SVTConstants.Z0ACTIVE[region] - SVTConstants.DEADZNLEN; // Cu edge of hybrid sensor's physical volume
 			regionVol.translate( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ)*0.1 + regionVol.getDimensions().get(2).value/2 ); // central dowel hole
-			
-			//regionVol.rotate("xyz", 0.0, 0.0, -Math.toRadians(90.0) ); // add a shift to test Util.replaceChildrenMother
-			//Util.moveChildrenToMother( regionVol );
-			
-			//sumZ0Active += SVTConstants.Z0ACTIVE[region];
 			
 			if( bShift )
 			{
@@ -255,7 +264,7 @@ public class SVTVolumeFactory
 			}
 		}
 		
-		//double meanZ0Active = sumZ0Active/(regionMax - regionMin + 1);
+		if( HALFBOXES ) Util.scaleDimensions(motherVol, 0.5, true);
 	}
 	
 	
@@ -299,13 +308,16 @@ public class SVTVolumeFactory
 			sectorVol.setName( sectorVol.getName() + (sector+1) ); // append name
 			Util.appendChildrenName( sectorVol, "_s"+ (sector+1) ); // append tag to end of name (GdmlFile's material replacement search fails if it's prepended)
 			
-			double phi = -2.0*Math.PI/SVTConstants.NSECTORS[aRegion]*sector - SVTConstants.PHI0; // module rotation about target / origin
-			double psi = phi - SVTConstants.SECTOR0 + 2*Math.PI; // module rotation about centre of geometry, +360 deg to set zero volume rotation for sector 1
+			double phi = SVTConstants.getPhi( aRegion, sector ); // module rotation about target / origin
+			double psi = phi - SVTConstants.SECTOR0 - Math.PI; // module rotation about centre of geometry, -180 deg to set zero volume rotation for sector 1
+			
+			//System.out.println("phi="+Math.toDegrees(phi));
 			
 			Vector3d pos = new Vector3d( rcen, 0.0, 0.0 );
-			pos.transform( new Transform().rotZ( phi ) );
+			pos.transform( new Transform().rotZ( -phi ) ); // change of sign for active/alibi -> passive/alias rotation
+			//System.out.printf("% 8.3f % 8.3f % 8.3f\n", pos.x, pos.y, pos.z );
 			
-			sectorVol.rotate("xyz", 0.0, 0.0, psi );
+			sectorVol.rotate("xyz", 0.0, 0.0, -psi ); // change of sign for active/alibi -> passive/alias rotation
 			sectorVol.setPosition( pos.times(0.1) );
 		}
 		
@@ -365,11 +377,11 @@ public class SVTVolumeFactory
 		
 		for( int module = moduleMin-1; module < moduleMax; module++ ) // NMODULES
 		{
-			if( VERBOSE ) System.out.println("  m "+ module );
+			//if( VERBOSE ) System.out.println("  m "+ module );
 			Geant4Basic moduleVol = createModule();
 			moduleVol.setMother( sectorVol );
-			moduleVol.setName( moduleVol.getName() + (module+1) );
-			Util.appendChildrenName( moduleVol, "_m"+ (module+1) );
+			moduleVol.setName( moduleVol.getName() + "_m" + (module+1) );
+			Util.appendChildrenName( moduleVol, "_m" + (module+1) );
 			
 			double moduleY = 0.0;
 			
@@ -390,28 +402,28 @@ public class SVTVolumeFactory
 			{
 				Geant4Basic carbonFiberVol = createCarbonFiber();
 				carbonFiberVol.setMother( sectorVol );
-				carbonFiberVol.setName( carbonFiberVol.getName() + (module+1) );
-				Util.appendChildrenName( carbonFiberVol, "_m"+ (module+1) );
+				carbonFiberVol.setName( carbonFiberVol.getName() + "_m" + (module+1) );
+				Util.appendChildrenName( carbonFiberVol, "_m" + (module+1) );
 				
 				Geant4Basic busCableVol = createBusCable();
 				busCableVol.setMother( sectorVol );
-				busCableVol.setName( busCableVol.getName() + (module+1) );
-				Util.appendChildrenName( busCableVol, "_m"+ (module+1) );
+				busCableVol.setName( busCableVol.getName() + "_m" + (module+1) );
+				Util.appendChildrenName( busCableVol, "_m" + (module+1) );
 				
 				Geant4Basic pitchAdaptorVol = createNamedVolume("pitchAdaptor");
 				pitchAdaptorVol.setMother( sectorVol );
-				pitchAdaptorVol.setName( pitchAdaptorVol.getName() + (module+1) );
-				Util.appendChildrenName( pitchAdaptorVol, "_m"+ (module+1) );
+				pitchAdaptorVol.setName( pitchAdaptorVol.getName() + "_m" + (module+1) );
+				Util.appendChildrenName( pitchAdaptorVol, "_m" + (module+1) );
 				
 				Geant4Basic pcBoardAndChipsVol = createPcBoardAndChips();
 				pcBoardAndChipsVol.setMother( sectorVol );
-				pcBoardAndChipsVol.setName( pcBoardAndChipsVol.getName() + (module+1) );
-				Util.appendChildrenName( pcBoardAndChipsVol, "_m"+ (module+1) );
+				pcBoardAndChipsVol.setName( pcBoardAndChipsVol.getName() + "_m" + (module+1) );
+				Util.appendChildrenName( pcBoardAndChipsVol, "_m" + (module+1) );
 				
 				Geant4Basic epoxyAndRailAndPadsVol = createEpoxyAndRailAndPads();
 				epoxyAndRailAndPadsVol.setMother( sectorVol );
-				epoxyAndRailAndPadsVol.setName( epoxyAndRailAndPadsVol.getName() + (module+1) );
-				Util.appendChildrenName( epoxyAndRailAndPadsVol, "_m"+ (module+1) );
+				epoxyAndRailAndPadsVol.setName( epoxyAndRailAndPadsVol.getName() + "_m" + (module+1) );
+				Util.appendChildrenName( epoxyAndRailAndPadsVol, "_m" + (module+1) );
 				
 				double carbonFiberY = 0.0;
 				double busCableY = 0.0;
@@ -475,7 +487,7 @@ public class SVTVolumeFactory
 		{
 			for( int sensor = 0; sensor < SVTConstants.NSENSORS; sensor++ )
 			{
-				if( VERBOSE ) System.out.println("   sp "+ sensor );
+				//if( VERBOSE ) System.out.println("   sp "+ sensor );
 				Geant4Basic sensorVol = createSensorPhysical(); // includes active and dead zones as children
 				sensorVol.setMother( moduleVol );
 				sensorVol.setName( sensorVol.getName() + (sensor+1) ); // add switch for hybrid, intermediate and far labels?
@@ -493,9 +505,6 @@ public class SVTVolumeFactory
 				double stepLen = activeZnLen + deadZnLen + microGapLen + deadZnLen; // stepLen
 				sensorZ = sensorPhysicalMidPos + sensor*stepLen - moduleLen/2;
 				sensorVol.setPosition( 0.0, 0.0, sensorZ*0.1 );
-				//sensorVol.setPosition( 0.0, 0.0, (SVTConstants.DEADZNLEN + sensor*( SVTConstants.ACTIVESENLEN + SVTConstants.DEADZNLEN + SVTConstants.MICROGAPLEN + SVTConstants.DEADZNLEN) - SVTConstants.MODULELEN/2.0 + SVTConstants.ACTIVESENLEN/2.0)*0.1 );
-				
-				Util.moveChildrenToMother( sensorVol );
 			}
 		}
 		
@@ -767,6 +776,36 @@ public class SVTVolumeFactory
 		}
 		
 		return mainVol;
+	}
+	
+	
+	public Geant4Basic createDownstreamSupport()
+	{
+		/*
+		 * GDML file needs to look like this
+		 * 
+			<polyhedra aunit="deg" deltaphi="360" lunit="mm" name="aBST_Downstream_SupportFrame_L1" numsides="10" startphi="0">
+		      <zplane rmax="65.39" rmin="0" z="0"/>
+		      <zplane rmax="65.39" rmin="0" z="14"/>
+		    </polyhedra>
+		    <tube aunit="deg" deltaphi="360" lunit="mm" name="bBST_Downstream_SupportHole_L1" rmax="62.39" rmin="0" startphi="0" z="28"/>
+		    <subtraction name="downstreamSupport_L1">
+		      <first ref="aBST_Downstream_SupportFrame_L1"/>
+		      <second ref="bBST_Downstream_SupportHole_L1"/>
+		      <position name="downstreamSupport_L1_pos" unit="mm" x="0" y="0" z="7"/>
+		    </subtraction>
+	    
+	    */
+		
+		String pgonName = "peekSupport_polyhedra",
+				tubeName = "peekSupport_tube";
+		
+		Geant4Basic polyhedra = new G4Pgon(pgonName, 10, 0, 360 );
+		Geant4Basic tube = new G4Tubs(tubeName, 0, 62.39, 28, 0, 360 );
+		Geant4Basic op = new G4Operation("subtract", pgonName, tubeName );
+		tube.setMother(op);
+		polyhedra.setMother(op);
+		return op;
 	}
 	
 	

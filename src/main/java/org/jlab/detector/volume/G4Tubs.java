@@ -5,9 +5,7 @@ import org.jlab.detector.units.SystemOfUnits.Length;
 import org.jlab.geometry.prim.Tube;
 
 /**
- * 
  * @author pdavies
- *
  */
 
 public class G4Tubs extends Geant4Basic {

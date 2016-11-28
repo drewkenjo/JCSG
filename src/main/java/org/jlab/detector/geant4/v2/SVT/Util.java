@@ -32,7 +32,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class Util
 {
@@ -277,6 +277,16 @@ public class Util
 	}
 	
 	
+	public static Geant4Basic createArrow( String aName, Vector3d aVec, double aCapRadius, double aPointerRadius, boolean aDisplayCapStart, boolean aDisplayPointer, boolean aDisplayCapEnd )
+	{
+		//System.out.printf("arrow vector x=% 8.3f y=% 8.3f z=% 8.3f mag=% 8.3f\n", aVec.x, aVec.y, aVec.z, aVec.magnitude() );
+		Geant4Basic arrowVol = createArrow( aName, aVec.magnitude(), aCapRadius, aPointerRadius, aDisplayCapStart, aDisplayPointer, aDisplayCapEnd );
+		double[] eulerAngles = Util.convertRotationVectorToGeant( aVec.theta(), aVec.phi() );
+		arrowVol.rotate("xyz", -eulerAngles[0], -eulerAngles[1], -eulerAngles[2] );
+		return arrowVol;
+	}
+	
+	
 	public static Geant4Basic createArrow( String aName, Line3d aLine, double aCapRadius, double aPointerRadius, boolean aDisplayCapStart, boolean aDisplayPointer, boolean aDisplayCapEnd )
 	{
 		Vector3d pointer = aLine.end().minus(aLine.origin());
@@ -448,40 +458,25 @@ public class Util
 	}
 	
 	
-	/*public static void scaleDimensions( Geant4Basic aVol, double aFactor )
+	/**
+	 * Recursively multiplies each linear dimension of the given volume and its children by the given scale factor.
+	 * 
+	 * @param aVol volume
+	 * @param aFactor scale factor
+	 */
+	public static void scaleDimensions( Geant4Basic aVol, double aFactor, boolean bRecursive )
 	{
-		List<Measurement> d = aVol.getDimensions();
+		aVol.scaleDimensions( aFactor );
 		
-		String type = aVol.getType().toLowerCase();
-		
-		switch( type )
+		if( bRecursive )
 		{
-		case "box": // cube or cuboid
-		case "eltube": // cylinder along Z axis
-		case "orb": // sphere
-			for( int i = 0; i < d.size(); i++ )
+			List<Geant4Basic> children = aVol.getChildren();
+			for( int i = 0; i < children.size(); i++ )
 			{
-				Measurement d.get(i)
-				d.set(i,  );
+				scaleDimensions( children.get(i), aFactor, true ); // tail recursive
 			}
-			break;
-			
-		case "tube": // hollow tube segment, only z needs to be halved
-			d[2] *= aFactor; // rmin, rmax, z, startphi, deltaphi
-			break;
-			
-		default:
-			throw new IllegalArgumentException("unknown type: \""+ type +"\"");
 		}
-		
-		aVol.setParameters( d );
-		
-		List<Geant4Basic> children = aVol.getChildren();
-		for( int i = 0; i < children.size(); i++ )
-		{
-			scaleDimensions( children.get(i), aFactor ); // tail recursive
-		}
-	}*/
+	}
 	
 	
 	/**

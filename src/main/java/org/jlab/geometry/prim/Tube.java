@@ -8,9 +8,7 @@ import eu.mihosoft.vrl.v3d.Primitive;
 import eu.mihosoft.vrl.v3d.PropertyStorage;
 
 /**
- * 
  * @author pdavies
- *
  */
 
 public class Tube implements Primitive {

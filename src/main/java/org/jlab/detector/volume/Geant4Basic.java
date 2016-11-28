@@ -6,6 +6,7 @@
 package org.jlab.detector.volume;
 
 import org.jlab.detector.units.Measurement;
+
 import eu.mihosoft.vrl.v3d.CSG;
 import org.jlab.geometry.prim.Straight;
 import eu.mihosoft.vrl.v3d.Primitive;
@@ -343,5 +344,26 @@ public abstract class Geant4Basic {
 	public void setPosition( Vector3d position )
 	{
 		this.translate( position.minus(this.getLocalPosition()) );
+	}
+
+	
+	/**
+	 * Recursively multiplies each linear dimension with units of "cm" of the given volume and its children by the given scale factor.
+	 * 
+	 * @param aFactor scale factor
+	 * @author pdavies
+	 */
+	public void scaleDimensions( double aFactor )
+	{		
+		if( this.getType().toLowerCase().contains("tube") )
+		{
+			this.getDimensions().get(2).value *= aFactor; // only scale zlen, not radii or angles
+		}
+		else
+		{
+			for( Measurement m : this.getDimensions() ) // general case
+				if( m.unit == "cm" ) m.value *= aFactor; // check for length units
+		}
+		
 	}
 }

@@ -638,7 +638,7 @@ public class Vector3d {
     }
     
     /**
-     * Rotates the given vector clockwise  around the axis produced by this
+     * Rotates the given vector clockwise around the axis produced by this
      * vector by the given angle.
      * 
      * @param vector the vector to rotate
@@ -647,20 +647,20 @@ public class Vector3d {
      * @author pdavies
      */
 	public void rotate( Vector3d vector, double angle ) {
-		
 		double m = vector.magnitude();
         Vector3d N = this.clone().normalized();
         Vector3d A = N.cross(vector);
         Vector3d B = A.cross(N);
-        A.times( Math.sin(angle) );
-        B.times( Math.cos(angle) );
+        A.set(A.times( Math.sin(angle) ));
+        B.set(B.times( Math.cos(angle) ));
         double n = N.dot(vector);
-        vector.set(N);
-        vector.times(n);
-        vector.add(A);
-        vector.add(B);
-        vector.normalized().times(m);
-		
+        vector.set(N.clone().times(n).add(A).add(B).normalized().times(m));
+        //System.out.printf("a: % 8.3f\n", Math.toDegrees(angle) );
+        //System.out.printf("n: % 8.3f\n", n );
+        //System.out.printf("N: % 8.3f % 8.3f % 8.3f\n", N.x, N.y, N.z );
+        //System.out.printf("A: % 8.3f % 8.3f % 8.3f\n", A.x, A.y, A.z );
+        //System.out.printf("B: % 8.3f % 8.3f % 8.3f\n", B.x, B.y, B.z );
+        //System.out.printf("V: % 8.3f % 8.3f % 8.3f\n", vector.x, vector.y, vector.z );
 	}
 
 	/**
