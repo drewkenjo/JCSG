@@ -28,7 +28,7 @@ import eu.mihosoft.vrl.v3d.Transform;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.6
+ * @version 1.0.7
  */
 public class SVTConstants
 {
@@ -494,7 +494,7 @@ public class SVTConstants
 	 * 
 	 * @param aFilename a filename
 	 */
-	public static void loadSectorAlignmentShifts( String aFilename )
+	public static void loadAlignmentSectorShifts( String aFilename )
 	{
 		filenameSectorShiftData = aFilename;
 		
@@ -793,13 +793,13 @@ public class SVTConstants
 	
 	
 	/**
-	 * Returns the alignment data.
+	 * Returns the sector alignment data.
 	 * 
 	 * @return double[][] an array of translations and axis-angle rotations of the form { tx, ty, tz, rx, ry, rz, ra }
 	 */
 	public static double[][] getDataAlignmentSectorShift()
 	{
-		if( SECTORSHIFTDATA == null ){ System.err.println("stop: SECTORSHIFTDATA requested is null"); System.exit(-1); }
+		if( SECTORSHIFTDATA == null ){ System.err.println("error: SVTConstants.getDataAlignmentSectorShift: SECTORSHIFTDATA requested is null"); } // System.exit(-1);
 		return SECTORSHIFTDATA;
 	}
 }

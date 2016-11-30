@@ -17,6 +17,43 @@ public class main {
 
 	public static void main(String[] args) {
 		
+		Geant4Basic topVol = new G4Box("top", 1, 1, 2 );
+		topVol.setMother( new G4Box("none", 1, 1, 1 ) );
+		
+		Geant4Basic myVol = new G4Box("myVol", 2, 2, 4 );
+		myVol.setMother( topVol );
+		myVol.setPosition( 0, 5, 0 );
+		myVol.rotate("xyz", 0, 0, -Math.toRadians(90) );
+		//myVol.rotate("xyz", 0, -Math.toRadians(45), 0 );
+		
+		Geant4Basic yourVol = new G4Box("yourVol", 2, 2, 4 );
+		yourVol.setMother( myVol );
+		yourVol.setPosition( 0, 5, 0 );
+		yourVol.rotate("xyz", 0, -Math.toRadians(45), 0 );
+		//yourVol.setRotation("xyz", 0, 0, -Math.toRadians(45) );
+		
+		Geant4Basic theirVol = new G4Box("theirVol", 2, 2, 2 );
+		theirVol.setMother( yourVol );
+		theirVol.rotate("xyz", 0, -Math.toRadians(90), 0 );
+		theirVol.setPosition( 2, 0, 0 );
+		
+		System.out.println( Util.gemcStringAll( topVol ) );
+		
+		Geant4Basic myOtherVol = new G4Box("myOtherVol", 2, 2, 4 ); // same as myVol
+		myOtherVol.setMother( topVol );
+		myOtherVol.setPosition( 0, 5, 0 );
+		myOtherVol.rotate("xyz", 0, 0, -Math.toRadians(90) );
+		//myOtherVol.rotate("xyz", 0, -Math.toRadians(45), 0 );
+		
+		Util.moveChildrenToMother( myVol );
+		
+		System.out.println( Util.gemcStringAll( topVol ) );
+		
+		GdmlExporter gdmlTest = VolumeExporterFactory.createGdmlFactory();
+		gdmlTest.addTopVolume( topVol );
+		gdmlTest.writeFile("test_matrix");
+		//System.exit(0);
+		
 		//double[][] nominalData = new double[][]{ new double[]{ 1,0,-1 }, new double[]{ -1,0,-1 }, new double[]{ 0,0,2 } };
 		//double[][] measuredData = new double[][]{ new double[]{ 1,0,1 }, new double[]{ 1,0,-1 }, new double[]{ -2,0,0 } };
 		
@@ -78,7 +115,7 @@ public class main {
 		SVTAlignmentFactory.setup( cp, "survey_ideals_reformat.dat", "survey_measured_reformat.dat" );
 		double[][] dataFactoryIdeal = SVTAlignmentFactory.getFactoryIdealFiducialData();
 		
-		AlignmentFactory.VERBOSE = true;
+		//AlignmentFactory.VERBOSE = true;
 		SVTAlignmentFactory.calcShifts( dataFactoryIdeal, SVTAlignmentFactory.getDataSurveyMeasured(), "shifts_survey_measured_from_factory_ideal.dat" );
 		//SVTAlignmentFactory.calcDeltas( dataFactoryIdeal, SVTAlignmentFactory.getDataSurveyMeasured(), "deltas_survey_measured_from_factory_ideal.dat" );
 		AlignmentFactory.VERBOSE = false;
@@ -100,6 +137,7 @@ public class main {
 				stripArrowPointerRadius = 0.25,
 				cornerBallRadius = 0.075; // cm
 		
+		//SVTConstants.loadAlignmentSectorShifts("shifts_custom.dat");
 		
 		SVTVolumeFactory svtIdealVolumeFactory = new SVTVolumeFactory( cp, false );
 		
@@ -110,7 +148,8 @@ public class main {
 		svtIdealVolumeFactory.VERBOSE = true;
 		svtIdealVolumeFactory.BUILDSENSORS = true;
 		svtIdealVolumeFactory.BUILDSENSORZONES = true;
-		svtIdealVolumeFactory.BUILDPASSIVES = false;
+		//svtIdealVolumeFactory.BUILDPASSIVES = false;
+		svtIdealVolumeFactory.BUILDMODULES = false;
 		
 		svtIdealVolumeFactory.makeVolumes();
 		//Geant4Basic sectorVol = svtIdealVolumeFactory.createSector(); sectorVol.setMother( svtIdealVolumeFactory.getMotherVolume() );
@@ -152,9 +191,9 @@ public class main {
 				{
 					Util.writeLine( fileIdealFiducials, String.format("R%dS%02dF%d % 8.3f % 8.3f % 8.3f\n", region+1, sector+1, fid+1, fidPos3Ds[fid].x, fidPos3Ds[fid].y, fidPos3Ds[fid].z ) );
 					
-					Geant4Basic fidBall = new G4Box("fiducialBall"+fid+"_s"+sector+"_r"+region, 0.1, 0.1, 0.1 ); // cm
-					fidBall.setPosition( fidPos3Ds[fid].times(0.1) ); // mm->cm
-					//fidBall.setMother( svtIdealVolumeFactory.getMotherVolume() );
+					Geant4Basic fidBox = new G4Box("fiducialBall"+fid+"_s"+sector+"_r"+region, 0.1, 0.1, 0.1 ); // cm
+					fidBox.setPosition( fidPos3Ds[fid].times(0.1) ); // mm->cm
+					fidBox.setMother( svtIdealVolumeFactory.getMotherVolume() );
 				}
 				
 				/*Triangle3d fidTri3D = new Triangle3d( fidPos3Ds[0], fidPos3Ds[1], fidPos3Ds[2] );

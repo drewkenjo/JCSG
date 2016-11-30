@@ -16,7 +16,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Processes fiducial survey data into alignment shifts, and applies those shifts to a given point or volume.
  * 
  * @author pdavies
- * @version 1.0.6
+ * @version 1.0.7
  */
 public class SVTAlignmentFactory
 {
@@ -35,7 +35,7 @@ public class SVTAlignmentFactory
 	private static double[][] dataSurveyIdeal, dataSurveyMeasured;
 	
 	/**
-	 * Constructs a new geometry factory for sensor strips.
+	 * Sets up a new geometry factory to process fiducial survey data into alignment shifts.
 	 * Please run {@code SVTConstants.connect() } first.
 	 * 
 	 * @param cp a DatabaseConstantProvider that has loaded the necessary tables

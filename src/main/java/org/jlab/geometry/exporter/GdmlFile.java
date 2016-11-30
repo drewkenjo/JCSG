@@ -34,7 +34,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Writes a file in GDML format for a given Geant4Basic volume structure.
  * 
  * @author pdavies
- * @version 1.0.0
+ * @version 1.0.7
  */
 
 public class GdmlFile implements GdmlExporter
@@ -46,7 +46,7 @@ public class GdmlFile implements GdmlExporter
 	
 	private boolean mVerbose = false;
 	
-	private String mPositionLoc = "global", mRotationLoc = "global";
+	private String mPositionLoc = "local", mRotationLoc = "local";
 	private String mDefaultMatRef = "mat_vacuum";
 	private String mDesiredAngleUnit = "deg";
 	private String mActualAngleUnit = "rad";

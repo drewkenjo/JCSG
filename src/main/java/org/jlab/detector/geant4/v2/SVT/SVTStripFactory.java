@@ -24,7 +24,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.4
+ * @version 1.0.7
  */
 public class SVTStripFactory
 {
@@ -61,7 +61,7 @@ public class SVTStripFactory
 	{
 		SVTConstants.load( cp );
 		bShift = true;
-		SVTConstants.loadSectorAlignmentShifts( filenameAlignmentShifts );
+		SVTConstants.loadAlignmentSectorShifts( filenameAlignmentShifts );
 	}
 	
 	

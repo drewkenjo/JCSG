@@ -32,7 +32,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.5
+ * @version 1.0.7
  */
 public class Util
 {
@@ -85,8 +85,8 @@ public class Util
 			boolean verbose = false;
 			
 			if( verbose ) System.out.println("replaceChildrenMother");
-			if( verbose ) System.out.println("mother: "+ mother.gemcString() );
-			if( verbose ) System.out.println("volume: "+ aVol.gemcString() );
+			if( verbose ) System.out.println("mother : "+ mother.gemcString() );
+			if( verbose ) System.out.println("volume : "+ aVol.gemcString() );
 			
 			for( int i = 0; i < aVol.getChildren().size(); i++ )
 			{
@@ -98,20 +98,25 @@ public class Util
 				double[] rotNew = Matrix.convertRotationToEulerInXYZ_ExZYX( rotChildInMother );
 				
 				Vector3d vecChildInVol = child.getLocalPosition(); // volume's frame
-				vecChildInVol = Util.toVector3D(Matrix.matMul( rotVolInMother, Util.toMatrix(vecChildInVol) )); // convert to mother's frame
-				Vector3d vecChildInMother = vecChildInVol.add( vecVolInMother ); // mother's frame
+				
+				vecChildInVol = Util.toVector3d(Matrix.matMul( rotVolInMother, Util.toMatrix(vecChildInVol) )); // convert to mother's frame
+				Vector3d vecChildInMother = vecChildInVol.clone().add( vecVolInMother ); // mother's frame
+				
+				if( verbose ) System.out.printf("vecChildInMother: % 8.3f % 8.3f % 8.3f\n", vecChildInMother.x, vecChildInMother.y, vecChildInMother.z );
+				if( verbose ) System.out.printf("vecChildInVol: % 8.3f % 8.3f % 8.3f\n", vecChildInVol.x, vecChildInVol.y, vecChildInVol.z );
 				
 				if( verbose ) System.out.printf("child %d: %s\n", i, child.gemcString() );
 	
-				child.translate( vecChildInMother.minus(vecChildInVol) );
-				child.rotate("xyz", rotC[0], rotC[1], rotC[2]);
-				child.rotate("xyz", -rotNew[0], -rotNew[1], -rotNew[2] );
+				child.rotate("xyz", -rotNew[0], -rotNew[1], -rotNew[2] ); // rotate first
+				child.setPosition( vecChildInMother ); // translate second
+				
 				child.setMother( mother );
 				//child.setName( child.getName()+"-" );
 				
 				if( verbose ) System.out.printf("child %d: %s\n", i, child.gemcString() );
 			}
 			mother.getChildren().remove( aVol );
+			if( verbose ) System.out.println();
 		}
 	}
 	
@@ -147,12 +152,12 @@ public class Util
 	
 	
 	/**
-	 * Returns a string, in a format suitable for GEMC, of the given volume, including all descendents.
+	 * Returns a string, in a format suitable for GEMC, of the given volume, including all children.
 	 * 
 	 * @param aVol volume
 	 * @return String multiple lines of text
 	 */
-	public static String toString( Geant4Basic aVol )
+	public static String gemcStringAll( Geant4Basic aVol )
 	{
 		StringBuilder str = new StringBuilder();
 		_toString( aVol, str );
@@ -226,7 +231,7 @@ public class Util
 	 * @return Vector3D vector
 	 * @throws IllegalArgumentException matrix wrong size
 	 */
-	public static Vector3d toVector3D( Matrix m ) throws IllegalArgumentException
+	public static Vector3d toVector3d( Matrix m ) throws IllegalArgumentException
 	{
 		if( !(m.nRows == 3 && m.nCols == 1 ) ) throw new IllegalArgumentException("Matrix wrong size");
 		return new Vector3d( m.getData()[0], m.getData()[1], m.getData()[2] );

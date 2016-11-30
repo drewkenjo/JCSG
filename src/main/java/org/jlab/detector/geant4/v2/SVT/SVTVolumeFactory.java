@@ -35,7 +35,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.5
+ * @version 1.0.7
  */
 public class SVTVolumeFactory
 {
@@ -64,10 +64,17 @@ public class SVTVolumeFactory
 	public boolean BUILDSENSORZONES = false;
 	
 	/**
-	 * A switch to control weather the physical sensors are made inside the strip modules.
+	 * A switch to control whether the physical sensors are made inside the strip modules.
 	 * Default: false
 	 */
 	public boolean BUILDSENSORS = false;
+	
+	/**
+	 * A switch to control whether the sensor modules are made.
+	 * Disable to see the high voltage rail assembly.
+	 * Default: true
+	 */
+	public boolean BUILDMODULES = true;
 	
 	/**
 	 * A switch to make only the sensors, without the passive materials
@@ -95,13 +102,16 @@ public class SVTVolumeFactory
 	 * Please run {@code SVTConstants.connect() } first.
 	 * 
 	 * @param cp a DatabaseConstantProvider that has loaded the necessary tables
-	 * @param applyAlignmentShiftsFromCcdb a switch to set whether the alignment shifts from CCDB will be applied
+	 * @param applyAlignmentShifts a switch to set whether the alignment shifts from CCDB will be applied
 	 */
-	public SVTVolumeFactory( DatabaseConstantProvider cp, boolean applyAlignmentShiftsFromCcdb )
+	public SVTVolumeFactory( DatabaseConstantProvider cp, boolean applyAlignmentShifts )
 	{
 		SVTConstants.load( cp );
-		setApplyAlignmentShifts( applyAlignmentShiftsFromCcdb );
-		if( bShift == true ){ SVTConstants.loadAlignmentShifts( cp ); }
+		setApplyAlignmentShifts( applyAlignmentShifts );
+		if( bShift == true && SVTConstants.getDataAlignmentSectorShift() == null ){
+			System.err.println("error: SVTVolumeFactory: please call SVTConstants.loadSectorAlignmentShifts first");
+			System.exit(-1);
+		}
 		
 		sectorMin = new int[SVTConstants.NREGIONS];
 		sectorMax = new int[SVTConstants.NREGIONS];
@@ -200,15 +210,14 @@ public class SVTVolumeFactory
 			System.out.println("  variation: ideal");
 		}
 		System.out.println( "  "+showRange() );
-		System.out.println("build passive materials ? "+ BUILDPASSIVES );
-		System.out.println("include physical sensors ? "+ BUILDSENSORS );
-		if( BUILDSENSORS ) System.out.println("include sensor active and dead zones ? "+ BUILDSENSORZONES );
-		System.out.println("halve dimensions of boxes ? "+ HALFBOXES );
+		System.out.println("  build passive materials ? "+ BUILDPASSIVES );
+		System.out.println("  include physical sensors ? "+ BUILDSENSORS );
+		if( BUILDSENSORS ) System.out.println("  include sensor active and dead zones ? "+ BUILDSENSORZONES );
+		System.out.println("  halve dimensions of boxes ? "+ HALFBOXES );
 		
 		for( int region = regionMin-1; region < regionMax; region++ ) // NREGIONS
 		{
-			if( VERBOSE ) System.out.println("r "+region);
-			
+			//if( VERBOSE ) System.out.println("r "+region);			
 			Geant4Basic regionVol = createRegion( region );
 			regionVol.setMother( motherVol );
 			regionVol.setName( regionVol.getName() + (region+1) );
@@ -280,19 +289,20 @@ public class SVTVolumeFactory
 		if( aRegion < 0 || aRegion > SVTConstants.NREGIONS-1 ){ throw new IllegalArgumentException("region out of bounds"); }
 		
 		double rcen = 0.5*(SVTConstants.LAYERRADIUS[aRegion][1] + SVTConstants.LAYERRADIUS[aRegion][0]);
-		double rthk = 0.5*(SVTConstants.LAYERRADIUS[aRegion][1] - SVTConstants.LAYERRADIUS[aRegion][0])*3; // scale factor to encompass the entire volume of the sectors
+		double rthk = 0.5*(SVTConstants.LAYERRADIUS[aRegion][1] - SVTConstants.LAYERRADIUS[aRegion][0])*4; // scale factor to encompass the entire volume of the sectors
 		double rmin = rcen - rthk;
 		double rmax = rcen + rthk;
 		double zlen = SVTConstants.SECTORLEN; // same length as dummy sector volume
 		
 		if( VERBOSE )
 		{
-			System.out.println("\nregion="+ aRegion );
-			System.out.println("rcen="+ rcen );
-			System.out.println("rthk="+ rthk );
-			System.out.println("rmin="+ rmin );
-			System.out.println("rmax="+ rmax );
-			System.out.println("len="+ zlen );
+			System.out.printf("region= %d\n", aRegion );
+			System.out.printf("rcen=% 8.3f\n", rcen );
+			System.out.printf("rthk=% 8.3f\n", rthk );
+			System.out.printf("rmin=% 8.3f\n", rmin );
+			System.out.printf("rmax=% 8.3f\n", rmax );
+			System.out.printf("len= % 8.3f\n", zlen );
+			System.out.println();
 		}
 		
 		Geant4Basic regionVol = new G4Tubs("region", rmin*0.1, rmax*0.1, zlen*0.1, 0, 360 );
@@ -301,7 +311,7 @@ public class SVTVolumeFactory
 		
 		for( int sector = sectorMin[aRegion]-1; sector < sectorMax[aRegion]; sector++ ) // NSECTORS[region]
 		{
-			if( VERBOSE ) System.out.println(" s "+sector);
+			//if( VERBOSE ) System.out.println(" s "+sector);
 			Geant4Basic sectorVol = createSector();
 			sectorVol.setMother( regionVol );
 			
@@ -339,6 +349,7 @@ public class SVTVolumeFactory
 		double busCableThk = SVTConstants.MATERIALDIMENSIONS.get("busCable")[1];
 		double epoxyThk = SVTConstants.MATERIALDIMENSIONS.get("epoxyAndRailAndPads")[1];
 		double pitchAdaptorThk = SVTConstants.MATERIALDIMENSIONS.get("pitchAdaptor")[1];
+		double pcBoardAndChipsThk = SVTConstants.MATERIALDIMENSIONS.get("pcBoardAndChips")[1];
 		
 		double heatSinkY = heatSinkThk/2 + heatSinkRidgeThk/2;
 		
@@ -353,7 +364,8 @@ public class SVTVolumeFactory
 		double pcBoardZEnd = 57.13; // from fidOriginZ
 		
 		double wid = SVTConstants.MODULEWID;
-		double thk = SVTConstants.LAYERGAPTHK + 2*SVTConstants.SILICONTHK;
+		//double thk = SVTConstants.LAYERGAPTHK + 2*SVTConstants.SILICONTHK;
+		double thk = rohacellThk + 2*(SVTConstants.PASSIVETHK + pcBoardAndChipsThk);
 		double len = SVTConstants.SECTORLEN;
 		
 		Geant4Basic sectorVol = new G4Box("sector", wid*0.1, thk*0.1, len*0.1 );
@@ -368,7 +380,8 @@ public class SVTVolumeFactory
 		{			
 			Geant4Basic heatSinkVol = createHeatSink();
 			heatSinkVol.setMother( sectorVol );
-			heatSinkVol.setPosition( 0.0, heatSinkY*0.1, -heatSinkCuZStart*0.0 + heatSinkLen/2*0.1 );
+			heatSinkVol.setPosition( 0.0, heatSinkY*0.1, -heatSinkCuZStart*0.1 + heatSinkLen/2*0.1 );
+			//Util.moveChildrenToMother( heatSinkVol );
 			
 			Geant4Basic rohacellVol = createNamedVolume("rohacell");
 			rohacellVol.setMother( sectorVol );
@@ -377,26 +390,29 @@ public class SVTVolumeFactory
 		
 		for( int module = moduleMin-1; module < moduleMax; module++ ) // NMODULES
 		{
-			//if( VERBOSE ) System.out.println("  m "+ module );
-			Geant4Basic moduleVol = createModule();
-			moduleVol.setMother( sectorVol );
-			moduleVol.setName( moduleVol.getName() + "_m" + (module+1) );
-			Util.appendChildrenName( moduleVol, "_m" + (module+1) );
-			
-			double moduleY = 0.0;
-			
-			switch( module ) 
+			if( BUILDMODULES )
 			{
-			case 0: // U = inner
-				moduleY = 0.0 + rohacellThk + SVTConstants.PASSIVETHK + SVTConstants.SILICONTHK/2;
-				break;
+				//if( VERBOSE ) System.out.println("  m "+ module );
+				Geant4Basic moduleVol = createModule();
+				moduleVol.setMother( sectorVol );
+				moduleVol.setName( moduleVol.getName() + "_m" + (module+1) );
+				Util.appendChildrenName( moduleVol, "_m" + (module+1) );
 				
-			case 1: // V = outer
-				moduleY = 0.0 - SVTConstants.PASSIVETHK - SVTConstants.SILICONTHK/2;
-				break;
+				double moduleY = 0.0;
+				
+				switch( module ) 
+				{
+				case 0: // U = inner
+					moduleY = 0.0 + rohacellThk + SVTConstants.PASSIVETHK + SVTConstants.SILICONTHK/2;
+					break;
+					
+				case 1: // V = outer
+					moduleY = 0.0 - SVTConstants.PASSIVETHK - SVTConstants.SILICONTHK/2;
+					break;
+				}
+				
+				moduleVol.setPosition( 0.0, moduleY*0.1, (SVTConstants.FIDORIGINZ + SVTConstants.MODULELEN/2)*0.1 );
 			}
-			
-			moduleVol.setPosition( 0.0, moduleY*0.1, (SVTConstants.FIDORIGINZ + SVTConstants.MODULELEN/2)*0.1 );
 			
 			if( BUILDPASSIVES )
 			{
@@ -771,7 +787,7 @@ public class SVTVolumeFactory
 			
 			padVol.setPosition( 
 					-railXStart*0.1, 
-					railVol.getDimensions().get(1).value/2 - mainVol.getDimensions().get(1).value/2, 
+					padVol.getDimensions().get(2).value/2 + railVol.getDimensions().get(1).value/2 - mainVol.getDimensions().get(1).value/2 + 0.002, 
 					mainVol.getDimensions().get(2).value/2 - padPos*0.1 );
 		}
 		
@@ -876,7 +892,7 @@ public class SVTVolumeFactory
 	@Override
 	public String toString()
 	{
-		return Util.toString( motherVol );
+		return Util.gemcStringAll( motherVol );
 	}
 	
 	
