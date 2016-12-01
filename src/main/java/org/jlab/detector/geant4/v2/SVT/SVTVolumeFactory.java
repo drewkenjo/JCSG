@@ -35,7 +35,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.7
+ * @version 1.0.8
  */
 public class SVTVolumeFactory
 {
@@ -224,7 +224,8 @@ public class SVTVolumeFactory
 			Util.appendChildrenName( regionVol, "_r"+ (region+1) );
 			
 			double zStartPhysical = SVTConstants.Z0ACTIVE[region] - SVTConstants.DEADZNLEN; // Cu edge of hybrid sensor's physical volume
-			regionVol.translate( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ)*0.1 + regionVol.getDimensions().get(2).value/2 ); // central dowel hole
+			double heatSinkCuZStart = 5.60; // CuStart from fidOriginZ
+			regionVol.translate( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ - heatSinkCuZStart )*0.1 + regionVol.getDimensions().get(2).value/2 ); // central dowel hole
 			
 			if( bShift )
 			{
@@ -329,6 +330,7 @@ public class SVTVolumeFactory
 			
 			sectorVol.rotate("xyz", 0.0, 0.0, -psi ); // change of sign for active/alibi -> passive/alias rotation
 			sectorVol.setPosition( pos.times(0.1) );
+			Util.moveChildrenToMother( sectorVol );
 		}
 		
 		return regionVol;
@@ -381,11 +383,11 @@ public class SVTVolumeFactory
 			Geant4Basic heatSinkVol = createHeatSink();
 			heatSinkVol.setMother( sectorVol );
 			heatSinkVol.setPosition( 0.0, heatSinkY*0.1, -heatSinkCuZStart*0.1 + heatSinkLen/2*0.1 );
-			//Util.moveChildrenToMother( heatSinkVol );
+			Util.moveChildrenToMother( heatSinkVol );
 			
 			Geant4Basic rohacellVol = createNamedVolume("rohacell");
 			rohacellVol.setMother( sectorVol );
-			rohacellVol.setPosition( 0.0, rohacellThk/2*0.1, heatSinkCuZStart*0.1 + rohacellZStart*0.1 + rohacellLen/2*0.1 );
+			rohacellVol.setPosition( 0.0, rohacellThk/2*0.1, rohacellZStart*0.1 + rohacellLen/2*0.1 );
 		}
 		
 		for( int module = moduleMin-1; module < moduleMax; module++ ) // NMODULES
@@ -484,7 +486,7 @@ public class SVTVolumeFactory
 		}
 		
 		for( Geant4Basic child : sectorVol.getChildren() )
-			Util.shiftPosition( child, 0.0, -rohacellThk/2*0.1, ( - len/2)*0.1 );
+			Util.shiftPosition( child, 0.0, -rohacellThk/2*0.1, (heatSinkCuZStart - len/2)*0.1 );
 	
 		return sectorVol;
 	}
@@ -787,7 +789,7 @@ public class SVTVolumeFactory
 			
 			padVol.setPosition( 
 					-railXStart*0.1, 
-					padVol.getDimensions().get(2).value/2 + railVol.getDimensions().get(1).value/2 - mainVol.getDimensions().get(1).value/2 + 0.002, 
+					padVol.getDimensions().get(2).value/2 + railVol.getDimensions().get(1).value - mainVol.getDimensions().get(1).value/2, 
 					mainVol.getDimensions().get(2).value/2 - padPos*0.1 );
 		}
 		

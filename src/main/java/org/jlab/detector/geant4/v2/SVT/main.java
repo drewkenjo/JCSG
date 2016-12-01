@@ -206,7 +206,7 @@ public class main {
 		
 		Util.closeOutputDataFile( fileNameIdealFiducials, fileIdealFiducials );
 		
-		System.out.println( svtIdealVolumeFactory.toString() );
+		//System.out.println( svtIdealVolumeFactory.toString() );
 		
 		GdmlExporter gdmlFile = VolumeExporterFactory.createGdmlFactory();
 		//gdmlFile.setVerbose( true ); // not useful for large numbers of volumes
@@ -237,10 +237,10 @@ public class main {
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_module", "materialref", "ref", "mat_hide");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sensorPhysical", "materialref", "ref", "mat_hide");
 		
-		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_half");
+		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_half");
 		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_half");
 		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_half");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_hide");
+		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_hide");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_hide");
 		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_hide");
 		
