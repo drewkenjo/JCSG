@@ -16,7 +16,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Processes fiducial survey data into alignment shifts, and applies those shifts to a given point or volume.
  * 
  * @author pdavies
- * @version 1.0.7
+ * @version 1.0.9
  */
 public class SVTAlignmentFactory
 {
@@ -57,6 +57,8 @@ public class SVTAlignmentFactory
 		
 		if( dataSurveyIdeal == null || dataSurveyMeasured == null )
 			throw new IllegalArgumentException("no data");
+		
+		if( SVTConstants.VERBOSE ) Util.VERBOSE = true; 
 	}
 
 	

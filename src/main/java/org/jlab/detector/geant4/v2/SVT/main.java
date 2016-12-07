@@ -17,7 +17,7 @@ public class main {
 
 	public static void main(String[] args) {
 		
-		Geant4Basic topVol = new G4Box("top", 1, 1, 2 );
+		/*Geant4Basic topVol = new G4Box("top", 1, 1, 2 );
 		topVol.setMother( new G4Box("none", 1, 1, 1 ) );
 		
 		Geant4Basic myVol = new G4Box("myVol", 2, 2, 4 );
@@ -51,7 +51,7 @@ public class main {
 		
 		GdmlExporter gdmlTest = VolumeExporterFactory.createGdmlFactory();
 		gdmlTest.addTopVolume( topVol );
-		gdmlTest.writeFile("test_matrix");
+		gdmlTest.writeFile("test_matrix");*/
 		//System.exit(0);
 		
 		//double[][] nominalData = new double[][]{ new double[]{ 1,0,-1 }, new double[]{ -1,0,-1 }, new double[]{ 0,0,2 } };
@@ -109,7 +109,7 @@ public class main {
 		
 		System.exit(0);*/
 		
-		SVTConstants.VERBOSE = true;
+		//SVTConstants.VERBOSE = true;
 		DatabaseConstantProvider cp = SVTConstants.connect( true );
 		
 		SVTAlignmentFactory.setup( cp, "survey_ideals_reformat.dat", "survey_measured_reformat.dat" );
@@ -134,18 +134,18 @@ public class main {
 				fidArrowCapRadius = 2.0, // mm
 				fidArrowPointerRadius = 1.0, // mm
 				stripArrowCapRadius = 0.5, // mm
-				stripArrowPointerRadius = 0.25,
-				cornerBallRadius = 0.075; // cm
+				stripArrowPointerRadius = 0.25, // mm
+				cornerDiscRadius = 0.075; // cm
 		
 		//SVTConstants.loadAlignmentSectorShifts("shifts_custom.dat");
 		
 		SVTVolumeFactory svtIdealVolumeFactory = new SVTVolumeFactory( cp, false );
 		
-		svtIdealVolumeFactory.setRange( regionSelector, sectorSelector, sectorSelector );
-		//svtIdealVolumeFactory.setRange( regionSelector, 0, 0 );
+		//svtIdealVolumeFactory.setRange( regionSelector, sectorSelector, sectorSelector );
+		svtIdealVolumeFactory.setRange( regionSelector, 0, 0 );
 		//svtIdealVolumeFactory.setRange( regionSelector, 1, 2 );
 		
-		svtIdealVolumeFactory.VERBOSE = true;
+		//svtIdealVolumeFactory.VERBOSE = true;
 		svtIdealVolumeFactory.BUILDSENSORS = true;
 		svtIdealVolumeFactory.BUILDSENSORZONES = true;
 		//svtIdealVolumeFactory.BUILDPASSIVES = false;
@@ -165,10 +165,10 @@ public class main {
 			{
 				for( int module = svtIdealVolumeFactory.getModuleMin()-1; module < svtIdealVolumeFactory.getModuleMax(); module++ )
 				{
-					for( int strip = 0; strip < SVTConstants.NSTRIPS; strip+=16 ) // SVTConstants.NSTRIPS
+					for( int strip = 0; strip < 1; strip+=16 ) // SVTConstants.NSTRIPS
 					{
 						Line3d stripLine = svtIdealStripFactory.getStrip( region, sector, module, strip );
-						//System.out.printf("\nr%ds%dm%ds%d %s\n", region, sector, module, strip, stripLine.toString() );
+						System.out.printf("\nr%ds%dm%ds%d %s\n", region, sector, module, strip, stripLine.toString() );
 						Geant4Basic stripVol = Util.createArrow("strip"+strip+"_m"+module+"_s"+sector+"_r"+region, stripLine, stripArrowCapRadius, stripArrowPointerRadius, false, true, false ); // mm
 						stripVol.setMother( svtIdealVolumeFactory.getMotherVolume() );
 						//System.out.println( stripVol.gemcString() );
@@ -179,7 +179,7 @@ public class main {
 					Vector3d[] layerCorners = svtIdealStripFactory.getLayerCorners( region, sector, module );
 					for( int i = 0; i < layerCorners.length; i++ )
 					{
-						Geant4Basic cornerDisc = new G4Tubs("cornerBall"+i+"_m"+module+"_s"+sector+"_r"+region, 0, cornerBallRadius, cornerBallRadius, 0, 360 ); // cm
+						Geant4Basic cornerDisc = new G4Tubs("cornerBall"+i+"_m"+module+"_s"+sector+"_r"+region, 0, cornerDiscRadius, cornerDiscRadius, 0, 360 ); // cm
 						cornerDisc.setPosition( layerCorners[i].times(0.1) ); // mm -> cm
 						//cornerDisc.setMother( svtIdealVolumeFactory.getMotherVolume() );
 					}

@@ -35,7 +35,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.8
+ * @version 1.0.9
  */
 public class SVTVolumeFactory
 {
@@ -126,6 +126,8 @@ public class SVTVolumeFactory
 		
 		Geant4Basic top = new G4World("none");
 		motherVol.setMother( top );
+		
+		if( SVTConstants.VERBOSE ) VERBOSE = true;
 	}
 	
 	
@@ -231,7 +233,6 @@ public class SVTVolumeFactory
 			{
 				for( int sector = sectorMin[region]-1; sector < sectorMax[region]; sector++ )
 				{
-					
 					Geant4Basic sectorVol = regionVol.getChildren().get( sector );
 					
 					//System.out.println("N "+sectorVol.gemcString() );
@@ -239,7 +240,7 @@ public class SVTVolumeFactory
 					Triangle3d fidTri3D = new Triangle3d( fidPos3Ds[0], fidPos3Ds[1], fidPos3Ds[2] );
 					
 					//System.out.println("rs "+ convertRegionSector2SvtIndex( aRegion, sector ));
-					double[] shift = SVTConstants.getDataAlignmentSectorShift()[SVTConstants.convertRegionSector2Index( region, sector )].clone();
+					//double[] shift = SVTConstants.getDataAlignmentSectorShift()[SVTConstants.convertRegionSector2Index( region, sector )].clone();
 					
 					/*if( VERBOSE )
 					{
@@ -330,7 +331,7 @@ public class SVTVolumeFactory
 			
 			sectorVol.rotate("xyz", 0.0, 0.0, -psi ); // change of sign for active/alibi -> passive/alias rotation
 			sectorVol.setPosition( pos.times(0.1) );
-			Util.moveChildrenToMother( sectorVol );
+			//Util.moveChildrenToMother( sectorVol );
 		}
 		
 		return regionVol;

@@ -32,10 +32,12 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.7
+ * @version 1.0.9
  */
 public class Util
 {
+	public static boolean VERBOSE = false;
+	
 	/**
 	 * Calculates the distance with uncertainty between two measured points.
 	 * 
@@ -597,7 +599,7 @@ public class Util
 			for( int k = 0; k < dataLen; k++ )
 				dataResult[k] = dataList.get(k);
 			
-			System.out.println("read "+ dataLen +" lines from \""+ aFilename +"\"");
+			if( VERBOSE ) System.out.println("read "+ dataLen +" lines from \""+ aFilename +"\"");
 			if( dataLen == 0 ){ throw new IllegalArgumentException("no data in file"); }
 			
 		}
@@ -625,7 +627,7 @@ public class Util
 		try
 		{
 			file = new BufferedWriter( new FileWriter( aName ) );
-			System.out.println("opened \""+ aName +"\"");
+			if( VERBOSE ) System.out.println("opened \""+ aName +"\"");
 		}
 		catch( IOException e )
 		{
@@ -672,7 +674,7 @@ public class Util
 			try
 			{
 				aFile.close();
-				System.out.println("closed \""+ aName +"\"");
+				if( VERBOSE ) System.out.println("closed \""+ aName +"\"");
 			}
 			catch( IOException e )
 			{
@@ -682,7 +684,7 @@ public class Util
 		}
 		else
 		{
-			System.out.println("\""+ aName +"\" is already closed");
+			System.err.println("error: Util: \""+ aName +"\" is already closed");
 		}
 	}	
 }

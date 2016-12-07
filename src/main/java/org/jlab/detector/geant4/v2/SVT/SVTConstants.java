@@ -28,7 +28,7 @@ import eu.mihosoft.vrl.v3d.Transform;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.7
+ * @version 1.0.9
  */
 public class SVTConstants
 {
@@ -112,9 +112,9 @@ public class SVTConstants
 	 */
 	public static DatabaseConstantProvider connect( boolean loadAlignmentTable )
 	{
-		System.out.println("ENVIRONMENT:");
-		System.out.println(" CLAS12DIR="+System.getenv("CLAS12DIR") );
-		System.out.println(" CCDB_DATABASE="+System.getenv("CCDB_DATABASE") );
+		if( VERBOSE ) System.out.println("ENVIRONMENT:");
+		if( VERBOSE ) System.out.println(" CLAS12DIR="+System.getenv("CLAS12DIR") );
+		if( VERBOSE ) System.out.println(" CCDB_DATABASE="+System.getenv("CCDB_DATABASE") );
 		
 		DatabaseConstantProvider cp = new DatabaseConstantProvider( 10, "default");
 		cp.loadTable( ccdbPath +"svt");
@@ -277,9 +277,9 @@ public class SVTConstants
 			double layerGapThk = MATERIALDIMENSIONS.get("rohacell")[1] + 2*PASSIVETHK; // construct from material thicknesses instead
 			
 			
-			System.out.printf("LAYERGAPTHK (CCDB)      = % 8.3f\n", LAYERGAPTHK );
-			System.out.printf("layerGapThk (MATERIALS) = % 8.3f\n", layerGapThk );
-			LAYERGAPTHK = layerGapThk; System.out.println("set LAYERGAPTHK to layerGapThk");
+			if( VERBOSE ) System.out.printf("LAYERGAPTHK (CCDB)      = % 8.3f\n", LAYERGAPTHK );
+			if( VERBOSE ) System.out.printf("layerGapThk (MATERIALS) = % 8.3f\n", layerGapThk );
+			LAYERGAPTHK = layerGapThk; if( VERBOSE ) System.out.println("set LAYERGAPTHK to layerGapThk");
 			
 			if( VERBOSE )
 			{
