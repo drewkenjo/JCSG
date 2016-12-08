@@ -3,3 +3,7 @@
 /.nb-gradle/
 /.gradle/
 /bin/
+/.externalToolBuilders/
+/.project
+/.settings/
+/.travis.yml
