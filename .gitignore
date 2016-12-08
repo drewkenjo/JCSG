@@ -3,7 +3,10 @@
 /.nb-gradle/
 /.gradle/
 /bin/
-/.externalToolBuilders/
+/.classpath
+/.gitignore
+/.gradle/1.8/taskArtifacts/fileHashes.bin
 /.project
-/.settings/
 /.travis.yml
+/.externalToolBuilders/
+/.settings/
