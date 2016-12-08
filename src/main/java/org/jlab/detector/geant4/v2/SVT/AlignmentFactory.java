@@ -1,8 +1,5 @@
 package org.jlab.detector.geant4.v2.SVT;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-
 import org.jlab.detector.volume.Geant4Basic;
 import org.jlab.geometry.prim.Triangle3d;
 

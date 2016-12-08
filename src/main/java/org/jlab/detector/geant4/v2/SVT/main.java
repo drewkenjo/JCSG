@@ -9,7 +9,6 @@ import org.jlab.detector.volume.Geant4Basic;
 import org.jlab.geometry.exporter.GdmlExporter;
 import org.jlab.geometry.exporter.VolumeExporterFactory;
 import org.jlab.geometry.prim.Line3d;
-import org.jlab.geometry.prim.Triangle3d;
 
 import eu.mihosoft.vrl.v3d.Vector3d;
 
