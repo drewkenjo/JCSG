@@ -110,7 +110,7 @@ public class SVTConstants
 	 * 
 	 * @return ConstantProvider a ConstantProvider that has loaded the necessary tables
 	 */
-	public static DatabaseConstantProvider connect( boolean loadAlignmentTable )
+	public static DatabaseConstantProvider connect()
 	{
 		if( VERBOSE ) System.out.println("ENVIRONMENT:");
 		if( VERBOSE ) System.out.println(" CLAS12DIR="+System.getenv("CLAS12DIR") );
@@ -123,7 +123,7 @@ public class SVTConstants
 		cp.loadTable( ccdbPath +"fiducial");
 		cp.loadTable( ccdbPath +"material/box");
 		cp.loadTable( ccdbPath +"material/tube");
-		if( loadAlignmentTable ) cp.loadTable( ccdbPath +"alignment");
+		cp.loadTable( ccdbPath +"alignment");
 		//if( loadAlignmentTables ) cp.loadTable( ccdbPath +"alignment/sector");
 		//if( loadAlignmentTables ) cp.loadTable( ccdbPath +"alignment/layer");
 		cp.disconnect();

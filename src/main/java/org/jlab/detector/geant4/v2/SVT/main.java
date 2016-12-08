@@ -6,8 +6,6 @@ import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.detector.volume.G4Box;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.Geant4Basic;
-import org.jlab.geometry.exporter.GdmlExporter;
-import org.jlab.geometry.exporter.VolumeExporterFactory;
 import org.jlab.geometry.prim.Line3d;
 
 import eu.mihosoft.vrl.v3d.Vector3d;
@@ -109,7 +107,7 @@ public class main {
 		System.exit(0);*/
 		
 		//SVTConstants.VERBOSE = true;
-		DatabaseConstantProvider cp = SVTConstants.connect( true );
+		DatabaseConstantProvider cp = SVTConstants.connect();
 		
 		SVTAlignmentFactory.setup( cp, "survey_ideals_reformat.dat", "survey_measured_reformat.dat" );
 		double[][] dataFactoryIdeal = SVTAlignmentFactory.getFactoryIdealFiducialData();
@@ -206,47 +204,6 @@ public class main {
 		Util.closeOutputDataFile( fileNameIdealFiducials, fileIdealFiducials );
 		
 		//System.out.println( svtIdealVolumeFactory.toString() );
-		
-		GdmlExporter gdmlFile = VolumeExporterFactory.createGdmlFactory();
-		//gdmlFile.setVerbose( true ); // not useful for large numbers of volumes
-		gdmlFile.setPositionLoc("local");
-		gdmlFile.setRotationLoc("local");
-		gdmlFile.addTopVolume( svtIdealVolumeFactory.getMotherVolume() );
-		
-		gdmlFile.addMaterialPreset("mat_hide", "mat_vacuum"); // use to hide dummy/container volumes
-		gdmlFile.addMaterialPreset("mat_half", "mat_vacuum"); // use for debugging
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSink", "materialref", "ref", "mat_hide");
-		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSink", "materialref", "ref", "mat_half");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSinkCu", "materialref", "ref", "mat_vacuum");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_heatSinkRidge", "materialref", "ref", "mat_vacuum");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_carbonFiber", "materialref", "ref", "mat_hide");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_carbonFiberCu", "materialref", "ref", "mat_vacuum");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_carbonFiberPk", "materialref", "ref", "mat_vacuum");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_busCable", "materialref", "ref", "mat_hide");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_busCableCu", "materialref", "ref", "mat_vacuum");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_busCablePk", "materialref", "ref", "mat_vacuum");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_pcBoardAndChips", "materialref", "ref", "mat_hide");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_epoxyAndRailAndPads", "materialref", "ref", "mat_hide");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_module", "materialref", "ref", "mat_hide");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sensorPhysical", "materialref", "ref", "mat_hide");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_half");
-		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_half");
-		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_half");
-		//gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_sector", "materialref", "ref", "mat_hide");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_region", "materialref", "ref", "mat_hide");
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "vol_svt", "materialref", "ref", "mat_hide");
-		
-		gdmlFile.replaceAttribute( "structure", "volume", "name", "arrow0", "materialref", "ref", "mat_hide");
-		//gdmlFile.replaceAttribute( "structure", "volume", "name", "arrow0", "materialref", "ref", "mat_half");
-		
-		gdmlFile.writeFile("SVTFactory_ideal");
 
 	}
 

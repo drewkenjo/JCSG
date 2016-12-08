@@ -776,7 +776,7 @@ public class SVTVolumeFactory
 				railZStart
 			};
 		
-		for( int pad = 0; pad < 9; pad++ )
+		for( int pad = 0; pad < SVTConstants.NPADS; pad++ )
 		{
 			Geant4Basic padVol = createNamedVolume("pad");
 			padVol.setMother( mainVol );
