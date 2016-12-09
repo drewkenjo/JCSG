@@ -6,8 +6,12 @@ import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.detector.volume.G4Box;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.Geant4Basic;
+import org.jlab.geometry.exporter.GdmlExporter;
+import org.jlab.geometry.exporter.VolumeExporterFactory;
 import org.jlab.geometry.prim.Line3d;
+import org.jlab.geometry.prim.Triangle3d;
 
+import eu.mihosoft.vrl.v3d.Plane;
 import eu.mihosoft.vrl.v3d.Vector3d;
 
 public class main {
@@ -48,7 +52,7 @@ public class main {
 		
 		GdmlExporter gdmlTest = VolumeExporterFactory.createGdmlFactory();
 		gdmlTest.addTopVolume( topVol );
-		gdmlTest.writeFile("test_matrix");*/
+		gdmlTest.writeFile("test_mother");*/
 		//System.exit(0);
 		
 		//double[][] nominalData = new double[][]{ new double[]{ 1,0,-1 }, new double[]{ -1,0,-1 }, new double[]{ 0,0,2 } };
@@ -105,6 +109,81 @@ public class main {
 		double[][] deltasData = AlignmentFactory.calcDeltas( 3, 3, measuredData, shiftedData );
 		
 		System.exit(0);*/
+		
+		Vector3d originPos = new Vector3d( 0.0, 1.0, 0.0 );
+		Vector3d[] fidPln0 = new Vector3d[]{ originPos, new Vector3d( 0.0, 1.0, 0.0 ) };
+		Vector3d[] fidPln1 = new Vector3d[]{ new Vector3d( fidPln0[0].x + 1.0, fidPln0[0].y, fidPln0[0].z ), new Vector3d( 0.0, 0.0, 1.0 ) };
+		double[] translationShift = Util.toDoubleArray( fidPln1[0].minus( fidPln0[0] ) );
+		double[] rotationShift = Util.convertVectorDiffToAxisAngle( fidPln0[1], fidPln1[1] );
+		
+		System.out.printf(" O: %5.1f %5.1f %5.1f\n", originPos.x, originPos.y, originPos.z );
+		System.out.printf("F0: %5.1f %5.1f %5.1f | %5.1f %5.1f %5.1f\n", fidPln0[0].x, fidPln0[0].y, fidPln0[0].z, fidPln0[1].x, fidPln0[1].y, fidPln0[1].z );
+		System.out.printf("F1: %5.1f %5.1f %5.1f | %5.1f %5.1f %5.1f\n", fidPln1[0].x, fidPln1[0].y, fidPln1[0].z, fidPln1[1].x, fidPln1[1].y, fidPln1[1].z );
+		System.out.printf(" S: %5.1f %5.1f %5.1f | %5.1f %5.1f %5.1f | %5.1f\n", translationShift[0], translationShift[1], translationShift[2], rotationShift[0], rotationShift[1], rotationShift[2], Math.toDegrees(rotationShift[3]) );
+		
+		Vector3d arbPos0 = new Vector3d( originPos.x, originPos.y + 1.0, originPos.z + 1.0 );
+		Vector3d arbPos1 = arbPos0.clone();
+		
+		Vector3d translationVec = Util.toVector3D( translationShift );
+		Vector3d centerVec = fidPln0[0];
+		Vector3d rotationVec = new Vector3d( rotationShift[0], rotationShift[1], rotationShift[2] );
+		System.out.printf("A0: %5.1f %5.1f %5.1f\n", arbPos0.x, arbPos0.y, arbPos0.z );
+		
+		centerVec.times( -1 );
+		arbPos1 = arbPos1.add( centerVec );
+		System.out.printf("A1: %5.1f %5.1f %5.1f centered\n", arbPos1.x, arbPos1.y, arbPos1.z );
+		
+		rotationVec.rotate( arbPos1, rotationShift[3] );
+		System.out.printf("A1: %5.1f %5.1f %5.1f rotated\n", arbPos1.x, arbPos1.y, arbPos1.z );
+		
+		centerVec.times( -1 );
+		arbPos1 = arbPos1.add( centerVec );
+		System.out.printf("A1: %5.1f %5.1f %5.1f centered back\n", arbPos1.x, arbPos1.y, arbPos1.z );
+		
+		arbPos1 = arbPos1.add( translationVec );
+		System.out.printf("A1: %5.1f %5.1f %5.1f translated\n", arbPos1.x, arbPos1.y, arbPos1.z );
+		
+		Geant4Basic topVol = new G4Box("top", 1,1,1 );
+		
+		double orbR = 0.02, arrowR = 0.01;
+		
+		Geant4Basic zeroVol = new G4Box("zero", orbR, orbR, orbR );
+		zeroVol.setMother( topVol );
+		
+		Geant4Basic originVol = new G4Box("origin", orbR, orbR, orbR );
+		originVol.setPosition( originPos.times(0.1) );
+		originVol.setMother( topVol );
+		
+		Geant4Basic fidPln0Vol = Util.createArrow("fidPln0", fidPln0[1], orbR*10, arrowR*10, true, true, false );
+		fidPln0Vol.setPosition( fidPln0[0].times(0.1) );
+		fidPln0Vol.setMother( topVol );
+		
+		Geant4Basic fidPln1Vol = Util.createArrow("fidPln1", fidPln1[1], orbR*10, arrowR*10, true, true, false );
+		fidPln1Vol.setPosition( fidPln1[0].times(0.1) );
+		fidPln1Vol.setMother( topVol );
+		
+		Geant4Basic arbPos0Vol = new G4Box("arbPos0", orbR, orbR, orbR );
+		arbPos0Vol.setPosition( arbPos0.times(0.1) );
+		//arbPos0Vol.setMother( topVol );
+		
+		Geant4Basic arbPos1Vol = new G4Box("arbPos1", orbR, orbR, orbR );
+		arbPos1Vol.setPosition( arbPos1.times(0.1) );
+		//arbPos1Vol.setMother( topVol );
+		
+		GdmlExporter gdmlTest = VolumeExporterFactory.createGdmlFactory();
+		//gdmlTest.setVerbose( true ); // not useful for large numbers of volumes
+		gdmlTest.setPositionLoc("local");
+		gdmlTest.setRotationLoc("local");
+		gdmlTest.addTopVolume( topVol );
+		
+		gdmlTest.addMaterialPreset("mat_hide", "mat_vacuum");
+		
+		gdmlTest.replaceVolumeMaterial( "arrow0", "mat_hide");
+		//gdmlTest.replaceVolumeMaterial( "arrow0", "mat_half");
+		
+		gdmlTest.writeFile("test_shift");
+		
+		System.exit(0);
 		
 		SVTConstants.VERBOSE = true;
 		DatabaseConstantProvider cp = SVTConstants.connect();
@@ -204,6 +283,44 @@ public class main {
 		Util.closeOutputDataFile( fileNameIdealFiducials, fileIdealFiducials );
 		
 		//System.out.println( svtIdealVolumeFactory.toString() );
+		
+		GdmlExporter gdmlFile = VolumeExporterFactory.createGdmlFactory();
+		gdmlFile.addTopVolume( svtIdealVolumeFactory.getMotherVolume() );
+
+		gdmlFile.addMaterialPreset("mat_hide", "mat_vacuum");
+		gdmlFile.addMaterialPreset("mat_half", "mat_vacuum");
+
+		gdmlFile.replaceVolumeMaterial( "vol_heatSink", "mat_hide");
+		//gdmlFile.replaceVolumeMaterial( "vol_heatSink", "mat_half");
+		gdmlFile.replaceVolumeMaterial( "vol_heatSinkCu", "mat_vacuum");
+		gdmlFile.replaceVolumeMaterial( "vol_heatSinkRidge", "mat_vacuum");
+
+		gdmlFile.replaceVolumeMaterial( "vol_carbonFiber", "mat_hide");
+		gdmlFile.replaceVolumeMaterial( "vol_carbonFiberCu", "mat_vacuum");
+		gdmlFile.replaceVolumeMaterial( "vol_carbonFiberPk", "mat_vacuum");
+
+		gdmlFile.replaceVolumeMaterial( "vol_busCable", "mat_hide");
+		gdmlFile.replaceVolumeMaterial( "vol_busCableCu", "mat_vacuum");
+		gdmlFile.replaceVolumeMaterial( "vol_busCablePk", "mat_vacuum");
+
+		gdmlFile.replaceVolumeMaterial( "vol_pcBoardAndChips", "mat_hide");
+
+		gdmlFile.replaceVolumeMaterial( "vol_epoxyAndRailAndPads", "mat_hide");
+
+		gdmlFile.replaceVolumeMaterial( "vol_module", "mat_hide");
+		gdmlFile.replaceVolumeMaterial( "vol_sensorPhysical", "mat_hide");
+
+		gdmlFile.replaceVolumeMaterial( "vol_sector", "mat_half");
+		//gdmlFile.replaceVolumeMaterial( "vol_region", "mat_half");
+		//gdmlFile.replaceVolumeMaterial( "vol_svt", "mat_half");
+		//gdmlFile.replaceVolumeMaterial( "vol_sector", "mat_hide");
+		gdmlFile.replaceVolumeMaterial( "vol_region", "mat_hide");
+		gdmlFile.replaceVolumeMaterial( "vol_svt", "mat_hide");
+
+		gdmlFile.replaceVolumeMaterial( "arrow0", "mat_hide");
+		//gdmlFile.replaceVolumeMaterial( "arrow0", "mat_half");
+
+		gdmlFile.writeFile("svt");
 
 	}
 

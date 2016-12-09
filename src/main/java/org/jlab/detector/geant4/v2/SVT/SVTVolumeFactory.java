@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.detector.volume.G4Box;
-import org.jlab.detector.volume.G4Operation;
-import org.jlab.detector.volume.G4Pgon;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.G4World;
 import org.jlab.detector.volume.Geant4Basic;

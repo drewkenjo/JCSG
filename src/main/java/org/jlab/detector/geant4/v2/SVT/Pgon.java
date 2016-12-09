@@ -1,4 +1,4 @@
-package org.jlab.geometry.prim;
+package org.jlab.detector.geant4.v2.SVT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,6 @@ import eu.mihosoft.vrl.v3d.PropertyStorage;
 /**
  * @author pdavies
  */
-
 public class Pgon implements Primitive {
 	
 	private final PropertyStorage properties = new PropertyStorage();
