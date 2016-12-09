@@ -363,7 +363,6 @@ public abstract class Geant4Basic {
 			for( Measurement m : this.getDimensions() ) // general case
 				if( m.unit == "cm" ) m.value *= aFactor; // check for length units
 		}
-		
 	}
 	
 	public Vector3d getLocal(Vector3d vec) {

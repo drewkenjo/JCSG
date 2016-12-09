@@ -106,7 +106,7 @@ public class main {
 		
 		System.exit(0);*/
 		
-		//SVTConstants.VERBOSE = true;
+		SVTConstants.VERBOSE = true;
 		DatabaseConstantProvider cp = SVTConstants.connect();
 		
 		SVTAlignmentFactory.setup( cp, "survey_ideals_reformat.dat", "survey_measured_reformat.dat" );
@@ -134,9 +134,9 @@ public class main {
 				stripArrowPointerRadius = 0.25, // mm
 				cornerDiscRadius = 0.075; // cm
 		
-		//SVTConstants.loadAlignmentSectorShifts("shifts_custom.dat");
-		
-		SVTVolumeFactory svtIdealVolumeFactory = new SVTVolumeFactory( cp, false );
+		SVTConstants.loadAlignmentSectorShifts("shifts_custom.dat");
+		AlignmentFactory.VERBOSE = true;
+		SVTVolumeFactory svtIdealVolumeFactory = new SVTVolumeFactory( cp, true );
 		
 		//svtIdealVolumeFactory.setRange( regionSelector, sectorSelector, sectorSelector );
 		svtIdealVolumeFactory.setRange( regionSelector, 0, 0 );
@@ -165,7 +165,7 @@ public class main {
 					for( int strip = 0; strip < 1; strip+=16 ) // SVTConstants.NSTRIPS
 					{
 						Line3d stripLine = svtIdealStripFactory.getStrip( region, sector, module, strip );
-						System.out.printf("\nr%ds%dm%ds%d %s\n", region, sector, module, strip, stripLine.toString() );
+						//System.out.printf("\nr%ds%dm%ds%d %s\n", region, sector, module, strip, stripLine.toString() );
 						Geant4Basic stripVol = Util.createArrow("strip"+strip+"_m"+module+"_s"+sector+"_r"+region, stripLine, stripArrowCapRadius, stripArrowPointerRadius, false, true, false ); // mm
 						stripVol.setMother( svtIdealVolumeFactory.getMotherVolume() );
 						//System.out.println( stripVol.gemcString() );

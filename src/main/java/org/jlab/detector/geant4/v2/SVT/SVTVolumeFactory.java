@@ -35,7 +35,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.9
+ * @version 1.0.11
  */
 public class SVTVolumeFactory
 {
@@ -106,7 +106,7 @@ public class SVTVolumeFactory
 	 */
 	public SVTVolumeFactory( DatabaseConstantProvider cp, boolean applyAlignmentShifts )
 	{
-		SVTConstants.load( cp );
+		//SVTConstants.load( cp );
 		setApplyAlignmentShifts( applyAlignmentShifts );
 		if( bShift == true && SVTConstants.getDataAlignmentSectorShift() == null ){
 			System.err.println("error: SVTVolumeFactory: please call SVTConstants.loadSectorAlignmentShifts first");

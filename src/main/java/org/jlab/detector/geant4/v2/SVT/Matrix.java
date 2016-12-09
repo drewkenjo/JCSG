@@ -190,6 +190,7 @@ public class Matrix
 		
 		//System.out.println("axis angle matrix");
 		//m3.show();
+		
 		//m3 = Matrix.transpose(m3);
 		return m3;
 	}

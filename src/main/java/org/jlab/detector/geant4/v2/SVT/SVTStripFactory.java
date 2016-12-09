@@ -24,7 +24,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.7
+ * @version 1.0.11
  */
 public class SVTStripFactory
 {
@@ -36,16 +36,16 @@ public class SVTStripFactory
 	 * Please run {@code SVTConstants.connect() } first.
 	 * 
 	 * @param cp a DatabaseConstantProvider that has loaded the necessary tables
-	 * @param applyAlignmentShiftsFromCcdb a switch to set whether the alignment shifts will be applied
+	 * @param applyAlignmentShifts a switch to set whether the alignment shifts will be applied
 	 * 
 	 * @see SVTConstants#connect
 	 * @see SVTStripFactory#getStrip
 	 * @see SVTStripFactory#getLayerCorners
 	 */
-	public SVTStripFactory( DatabaseConstantProvider cp, boolean applyAlignmentShiftsFromCcdb )
+	public SVTStripFactory( DatabaseConstantProvider cp, boolean applyAlignmentShifts )
 	{
-		SVTConstants.load( cp );
-		if( applyAlignmentShiftsFromCcdb ){ bShift = true; SVTConstants.loadAlignmentShifts( cp ); }
+		//SVTConstants.load( cp );
+		if( applyAlignmentShifts ){ bShift = true; }
 	}
 	
 	/**

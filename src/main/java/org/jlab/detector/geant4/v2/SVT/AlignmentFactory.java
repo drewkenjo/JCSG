@@ -280,7 +280,6 @@ public class AlignmentFactory
 				aShiftedData[j*3+i][0] = pos.x;
 				aShiftedData[j*3+i][1] = pos.y;
 				aShiftedData[j*3+i][2] = pos.z;
-				
 			}
 		return aShiftedData;
 	}
@@ -365,7 +364,7 @@ public class AlignmentFactory
 		double rz = aShift[5];
 		double ra = aShift[6]*aScaleR; // must be in radians
 		
-		//System.out.println( aVol.gemcString() );
+		if( VERBOSE ) System.out.println( aVol.gemcString() );
 		
 		Vector3d pos = new Vector3d( aVol.getLocalPosition().x*10, aVol.getLocalPosition().y*10, aVol.getLocalPosition().z*10 ); // cm -> mm
 		applyShift( pos, aShift, aNominalCenter, aScaleT, aScaleR );
@@ -373,7 +372,7 @@ public class AlignmentFactory
 		
 		double[] rot = aVol.getLocalRotation();
 		Matrix rotMatrix = Matrix.convertRotationFromEulerInXYZ_ExZYX( -rot[0], -rot[1], -rot[2] ); // Geant = passive/alias, Java = active/alibi
-		//double[] vec = rotMatrix.convertRotationToEulerInZYX_ExXYZ( rot[0], rot[1], rot[2] ); 
+		//double[] vec = rotMatrix.convertRotationToEulerInZYX_ExXYZ( rot[0], rot[1], rot[2] );
 		
 		if( VERBOSE ) System.out.printf("RI: % 8.3f % 8.3f % 8.3f\n", Math.toDegrees(-rot[0]), Math.toDegrees(-rot[1]), Math.toDegrees(-rot[2]) );
 		//rotMatrix.show();
@@ -393,14 +392,20 @@ public class AlignmentFactory
 			System.out.println("vector "+i+" matrix rotated"); Matrix.matMul( rotMatrix, new Matrix(3, 1, Util.toDoubleArray( vr[i] ) ) ).show();
 		}*/
 		
-		Vector3d vrs = new Vector3d( rx, ry, rz ).normalized();
+		Vector3d vrs = new Vector3d( rx, ry, rz );
+		if( vrs.magnitude() != 0 ) vrs = vrs.normalized();
 		Matrix shiftMatrix = Matrix.convertRotationAxisAngleToMatrix( new double[]{ vrs.x, vrs.y, vrs.z, ra } );
 		rotMatrix = Matrix.matMul( shiftMatrix, rotMatrix );
-		rot = Matrix.convertRotationToEulerInXYZ_ExZYX( rotMatrix );
+		
+		//rot = Matrix.convertRotationToEulerInXYZ_ExZYX( rotMatrix ); // this line causes major problems
+		
+		// these lines invert the rotation somehow
 		aVol.rotate("xyz", aVol.getLocalRotation()[0], aVol.getLocalRotation()[1], aVol.getLocalRotation()[2] ); // reverse previous rotation
 		aVol.rotate("xyz", -rot[0], -rot[1], -rot[2] );
 		
 		if( VERBOSE ) System.out.printf("RS: % 8.3f % 8.3f % 8.3f\n", Math.toDegrees(-rot[0]), Math.toDegrees(-rot[1]), Math.toDegrees(-rot[2]) );
+		
+		if( VERBOSE ) System.out.println( aVol.gemcString() );
 		
 		//rotMatrix = Matrix.convertRotationFromEulerInXYZ_ExZYX( -rot[0], -rot[1], -rot[2] ); // Geant = passive/alias, Java = active/alibi
 		//rotMatrix.show();
