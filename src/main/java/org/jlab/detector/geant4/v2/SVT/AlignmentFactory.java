@@ -11,7 +11,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Universal class for processing and applying alignment shifts to points and volumes.
  * 
  * @author pdavies
- * @version 1.0.0
+ * @version 1.0.11
  */
 public class AlignmentFactory
 {
@@ -399,7 +399,7 @@ public class AlignmentFactory
 		
 		//rot = Matrix.convertRotationToEulerInXYZ_ExZYX( rotMatrix ); // this line causes major problems
 		
-		// these lines invert the rotation somehow
+		// these lines invert the rotation somehow with a zero shift
 		aVol.rotate("xyz", aVol.getLocalRotation()[0], aVol.getLocalRotation()[1], aVol.getLocalRotation()[2] ); // reverse previous rotation
 		aVol.rotate("xyz", -rot[0], -rot[1], -rot[2] );
 		

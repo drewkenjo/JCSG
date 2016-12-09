@@ -139,8 +139,8 @@ public class main {
 		SVTVolumeFactory svtIdealVolumeFactory = new SVTVolumeFactory( cp, true );
 		
 		//svtIdealVolumeFactory.setRange( regionSelector, sectorSelector, sectorSelector );
-		svtIdealVolumeFactory.setRange( regionSelector, 0, 0 );
-		//svtIdealVolumeFactory.setRange( regionSelector, 1, 2 );
+		//svtIdealVolumeFactory.setRange( regionSelector, 0, 0 );
+		svtIdealVolumeFactory.setRange( regionSelector, 1, 2 );
 		
 		//svtIdealVolumeFactory.VERBOSE = true;
 		svtIdealVolumeFactory.BUILDSENSORS = true;
