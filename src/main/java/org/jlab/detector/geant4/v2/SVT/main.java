@@ -6,8 +6,6 @@ import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.detector.volume.G4Box;
 import org.jlab.detector.volume.G4Tubs;
 import org.jlab.detector.volume.Geant4Basic;
-import org.jlab.geometry.exporter.GdmlExporter;
-import org.jlab.geometry.exporter.VolumeExporterFactory;
 import org.jlab.geometry.prim.Line3d;
 import org.jlab.geometry.prim.Triangle3d;
 
@@ -170,7 +168,7 @@ public class main {
 		arbPos1Vol.setPosition( arbPos1.times(0.1) );
 		//arbPos1Vol.setMother( topVol );
 		
-		GdmlExporter gdmlTest = VolumeExporterFactory.createGdmlFactory();
+		/*GdmlExporter gdmlTest = VolumeExporterFactory.createGdmlFactory();
 		//gdmlTest.setVerbose( true ); // not useful for large numbers of volumes
 		gdmlTest.setPositionLoc("local");
 		gdmlTest.setRotationLoc("local");
@@ -181,7 +179,7 @@ public class main {
 		gdmlTest.replaceVolumeMaterial( "arrow0", "mat_hide");
 		//gdmlTest.replaceVolumeMaterial( "arrow0", "mat_half");
 		
-		gdmlTest.writeFile("test_shift");
+		gdmlTest.writeFile("test_shift");*/
 		
 		System.exit(0);
 		
@@ -283,44 +281,6 @@ public class main {
 		Util.closeOutputDataFile( fileNameIdealFiducials, fileIdealFiducials );
 		
 		//System.out.println( svtIdealVolumeFactory.toString() );
-		
-		GdmlExporter gdmlFile = VolumeExporterFactory.createGdmlFactory();
-		gdmlFile.addTopVolume( svtIdealVolumeFactory.getMotherVolume() );
-
-		gdmlFile.addMaterialPreset("mat_hide", "mat_vacuum");
-		gdmlFile.addMaterialPreset("mat_half", "mat_vacuum");
-
-		gdmlFile.replaceVolumeMaterial( "vol_heatSink", "mat_hide");
-		//gdmlFile.replaceVolumeMaterial( "vol_heatSink", "mat_half");
-		gdmlFile.replaceVolumeMaterial( "vol_heatSinkCu", "mat_vacuum");
-		gdmlFile.replaceVolumeMaterial( "vol_heatSinkRidge", "mat_vacuum");
-
-		gdmlFile.replaceVolumeMaterial( "vol_carbonFiber", "mat_hide");
-		gdmlFile.replaceVolumeMaterial( "vol_carbonFiberCu", "mat_vacuum");
-		gdmlFile.replaceVolumeMaterial( "vol_carbonFiberPk", "mat_vacuum");
-
-		gdmlFile.replaceVolumeMaterial( "vol_busCable", "mat_hide");
-		gdmlFile.replaceVolumeMaterial( "vol_busCableCu", "mat_vacuum");
-		gdmlFile.replaceVolumeMaterial( "vol_busCablePk", "mat_vacuum");
-
-		gdmlFile.replaceVolumeMaterial( "vol_pcBoardAndChips", "mat_hide");
-
-		gdmlFile.replaceVolumeMaterial( "vol_epoxyAndRailAndPads", "mat_hide");
-
-		gdmlFile.replaceVolumeMaterial( "vol_module", "mat_hide");
-		gdmlFile.replaceVolumeMaterial( "vol_sensorPhysical", "mat_hide");
-
-		gdmlFile.replaceVolumeMaterial( "vol_sector", "mat_half");
-		//gdmlFile.replaceVolumeMaterial( "vol_region", "mat_half");
-		//gdmlFile.replaceVolumeMaterial( "vol_svt", "mat_half");
-		//gdmlFile.replaceVolumeMaterial( "vol_sector", "mat_hide");
-		gdmlFile.replaceVolumeMaterial( "vol_region", "mat_hide");
-		gdmlFile.replaceVolumeMaterial( "vol_svt", "mat_hide");
-
-		gdmlFile.replaceVolumeMaterial( "arrow0", "mat_hide");
-		//gdmlFile.replaceVolumeMaterial( "arrow0", "mat_half");
-
-		gdmlFile.writeFile("svt");
 
 	}
 
