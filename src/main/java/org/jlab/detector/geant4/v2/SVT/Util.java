@@ -32,7 +32,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.0.9
+ * @version 1.0.12
  */
 public class Util
 {
@@ -473,8 +473,8 @@ public class Util
 	 */
 	public static void scaleDimensions( Geant4Basic aVol, double aFactor, boolean bRecursive )
 	{
-		//aVol.scaleDimensions( aFactor );
-		aVol.scale( aFactor );
+		aVol.scaleDimensions( aFactor );
+		//aVol.scale( aFactor );
 		
 		if( bRecursive )
 		{
