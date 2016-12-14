@@ -106,6 +106,7 @@ public class main {
 		System.exit(0);*/
 		
 		Vector3d originPos = new Vector3d( 0.0, 1.0, 0.0 );
+
 		Vector3d[] fidPln0 = new Vector3d[]{ originPos.clone(), new Vector3d( 0.0, 1.0, 0.0 ) };
 		Vector3d[] fidPln1 = new Vector3d[]{ new Vector3d( fidPln0[0].x + 1.0, fidPln0[0].y, fidPln0[0].z ), new Vector3d( 0.0, 0.0, 1.0 ) };
 		double[] translationShift = Util.toDoubleArray( fidPln1[0].minus( fidPln0[0] ) );

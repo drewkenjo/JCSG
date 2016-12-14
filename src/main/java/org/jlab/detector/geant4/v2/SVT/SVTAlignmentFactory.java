@@ -16,7 +16,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * Processes fiducial survey data into alignment shifts, and applies those shifts to a given point or volume.
  * 
  * @author pdavies
- * @version 1.0.12
+ * @version 1.1.0
  */
 public class SVTAlignmentFactory
 {
