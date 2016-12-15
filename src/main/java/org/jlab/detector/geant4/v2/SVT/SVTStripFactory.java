@@ -256,7 +256,7 @@ public class SVTStripFactory
 		System.out.println("calc W-3*d     = "+ (ACTIVESENWID - 2*1.5*d) );*/
 		
 		Line3d stripLine = new Line3d( new Vector3d( x0, 0.0, z0 ), new Vector3d( x1, 0.0, z1 ) );
-		return stripLine.transformed(SVTConstants.getStripFrame( aModule == 0 )); // strip frame -> local frame
+		return stripLine.transformed(SVTConstants.getStripFrame( aModule == 1 )); // strip frame -> local frame
 	}
 	
 	
