@@ -105,7 +105,7 @@ public class main {
 		
 		System.exit(0);*/
 		
-		Vector3d originPos = new Vector3d( 0.0, 1.0, 0.0 );
+		/*Vector3d originPos = new Vector3d( 0.0, 1.0, 0.0 );
 
 		Vector3d[] fidPln0 = new Vector3d[]{ originPos.clone(), new Vector3d( 0.0, 1.0, 0.0 ) };
 		Vector3d[] fidPln1 = new Vector3d[]{ new Vector3d( fidPln0[0].x + 1.0, fidPln0[0].y, fidPln0[0].z ), new Vector3d( 0.0, 0.0, 1.0 ) };
@@ -166,7 +166,7 @@ public class main {
 		arbPos1Vol.setPosition( arbPos1.times(0.1) );
 		//arbPos1Vol.setMother( topVol );
 		
-		System.exit(0);
+		System.exit(0);*/
 		
 		SVTConstants.VERBOSE = true;
 		DatabaseConstantProvider cp = SVTConstants.connect();
