@@ -33,7 +33,7 @@ import eu.mihosoft.vrl.v3d.Vector3d;
  * </ul>
  * 
  * @author pdavies
- * @version 1.1.1
+ * @version 1.1.2
  */
 public class SVTVolumeFactory
 {
