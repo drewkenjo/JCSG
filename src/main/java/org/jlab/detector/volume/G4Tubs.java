@@ -34,7 +34,7 @@ public class G4Tubs extends Geant4Basic {
         return volumeDimensions.get(3).value;
     }
 
-    public double getZPhiDelta() {
+    public double getPhiDelta() {
         return volumeDimensions.get(4).value;
     }
 
