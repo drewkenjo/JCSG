@@ -226,7 +226,7 @@ public class SVTVolumeFactory
 			
 			double zStartPhysical = SVTConstants.Z0ACTIVE[region] - SVTConstants.DEADZNLEN; // Cu edge of hybrid sensor's physical volume
 			double heatSinkCuZStart = 5.60; // CuStart from fidOriginZ
-			regionVol.translate( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ - heatSinkCuZStart )*0.1 + regionVol.getDimensions().get(2).value/2 ); // central dowel hole
+			regionVol.translate( 0, 0, (zStartPhysical - SVTConstants.FIDORIGINZ - heatSinkCuZStart )*0.1 + regionVol.getDimensions().get(2).value ); // central dowel hole
 			
 			if( bShift )
 			{
@@ -457,7 +457,7 @@ public class SVTVolumeFactory
 					busCableY     = 0.0 + rohacellThk + carbonFiberThk + busCableThk/2;
 					epoxyY        = 0.0 + rohacellThk + carbonFiberThk + busCableThk + epoxyThk/2;
 					pitchAdaptorY = 0.0 + rohacellThk + SVTConstants.PASSIVETHK + pitchAdaptorThk/2;
-					pcBoardY      = 0.0 + rohacellThk + SVTConstants.PASSIVETHK + pcBoardAndChipsVol.getDimensions().get(1).value/2*10;
+					pcBoardY      = 0.0 + rohacellThk + SVTConstants.PASSIVETHK + pcBoardAndChipsVol.getDimensions().get(1).value*10;
 					break;
 					
 				case 1: // V = outer
@@ -466,18 +466,18 @@ public class SVTVolumeFactory
 					busCableY     = 0.0 - carbonFiberThk - busCableThk/2;
 					epoxyY        = 0.0 - carbonFiberThk - busCableThk - epoxyThk/2;
 					pitchAdaptorY = 0.0 - SVTConstants.PASSIVETHK - pitchAdaptorThk/2;
-					pcBoardY      = 0.0 - SVTConstants.PASSIVETHK - pcBoardAndChipsVol.getDimensions().get(1).value/2*10;
+					pcBoardY      = 0.0 - SVTConstants.PASSIVETHK - pcBoardAndChipsVol.getDimensions().get(1).value*10;
 					
 					epoxyAndRailAndPadsVol.rotate("xyz", 0.0, 0.0, Math.PI );
 					pcBoardAndChipsVol.rotate("xyz", 0.0, 0.0, Math.PI );
 					break;
 				}
 			
-				carbonFiberVol.setPosition(         0.0, carbonFiberY*0.1,  (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + carbonFiberVol.getDimensions().get(2).value/2 );
-				busCableVol.setPosition(            0.0, busCableY*0.1,     (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + busCableVol.getDimensions().get(2).value/2 ); // same Z position as carbonFiber
-				epoxyAndRailAndPadsVol.setPosition( 0.0, epoxyY*0.1,        (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + epoxyAndRailAndPadsVol.getDimensions().get(2).value/2 ); // same Z position as carbonFiber
-				pitchAdaptorVol.setPosition(        0.0, pitchAdaptorY*0.1, pitchAdaptorZEnd*0.1 - pitchAdaptorVol.getDimensions().get(2).value/2 );
-				pcBoardAndChipsVol.setPosition(     0.0, pcBoardY*0.1,      pcBoardZEnd*0.1 - pcBoardAndChipsVol.getDimensions().get(2).value/2 );
+				carbonFiberVol.setPosition(         0.0, carbonFiberY*0.1,  (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + carbonFiberVol.getDimensions().get(2).value );
+				busCableVol.setPosition(            0.0, busCableY*0.1,     (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + busCableVol.getDimensions().get(2).value ); // same Z position as carbonFiber
+				epoxyAndRailAndPadsVol.setPosition( 0.0, epoxyY*0.1,        (0.0 - heatSinkCuZStart + heatSinkRidgeLen + carbonFiberZStart)*0.1 + epoxyAndRailAndPadsVol.getDimensions().get(2).value ); // same Z position as carbonFiber
+				pitchAdaptorVol.setPosition(        0.0, pitchAdaptorY*0.1, pitchAdaptorZEnd*0.1 - pitchAdaptorVol.getDimensions().get(2).value );
+				pcBoardAndChipsVol.setPosition(     0.0, pcBoardY*0.1,      pcBoardZEnd*0.1 - pcBoardAndChipsVol.getDimensions().get(2).value );
 			}
 			
 			/*for( int kapton = 0; kapton < 1; kapton++ ) // left, right
@@ -500,7 +500,7 @@ public class SVTVolumeFactory
 	 */
 	public Geant4Basic createModule()
 	{		
-		Geant4Basic moduleVol = new G4Box( "module", SVTConstants.PHYSSENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.MODULELEN*0.1 );
+		Geant4Basic moduleVol = new G4Box( "module", SVTConstants.PHYSSENWID/2.0*0.1, SVTConstants.SILICONTHK/2.0*0.1, SVTConstants.MODULELEN/2.0*0.1 );
 		
 		if( BUILDSENSORS ) // gemc handles the physical sensors itself in the hit process algorithm
 		{
@@ -538,7 +538,7 @@ public class SVTVolumeFactory
 	 */
 	public Geant4Basic createSensorPhysical()
 	{		
-		Geant4Basic senPhysicalVol = new G4Box( "sensorPhysical", SVTConstants.PHYSSENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.PHYSSENLEN*0.1 );
+		Geant4Basic senPhysicalVol = new G4Box( "sensorPhysical", SVTConstants.PHYSSENWID/2.0*0.1, SVTConstants.SILICONTHK/2.0*0.1, SVTConstants.PHYSSENLEN/2.0*0.1 );
 		
 		if( BUILDSENSORZONES ) // gemc handles the active and dead zones itself in the hit process algorithm
 		{
@@ -565,19 +565,19 @@ public class SVTVolumeFactory
 				{
 				case 0:
 					deadZnVol = createDeadZone("l");
-					deadZnVol.setPosition( -(SVTConstants.ACTIVESENWID + SVTConstants.DEADZNWID + VOLSPACER)/2*0.1, 0.0, 0.0 );
+					deadZnVol.setPosition( -(SVTConstants.ACTIVESENWID + SVTConstants.DEADZNWID + VOLSPACER)/2.0*0.1, 0.0, 0.0 );
 					break;
 				case 1:
 					deadZnVol = createDeadZone("l");
-					deadZnVol.setPosition(  (SVTConstants.ACTIVESENWID + SVTConstants.DEADZNWID + VOLSPACER)/2*0.1, 0.0, 0.0 );
+					deadZnVol.setPosition(  (SVTConstants.ACTIVESENWID + SVTConstants.DEADZNWID + VOLSPACER)/2.0*0.1, 0.0, 0.0 );
 					break;
 				case 2:
 					deadZnVol = createDeadZone("w");
-					deadZnVol.setPosition( 0.0, 0.0, -(SVTConstants.ACTIVESENLEN + SVTConstants.DEADZNLEN + VOLSPACER)/2*0.1 );
+					deadZnVol.setPosition( 0.0, 0.0, -(SVTConstants.ACTIVESENLEN + SVTConstants.DEADZNLEN + VOLSPACER)/2.0*0.1 );
 					break;
 				case 3:
 					deadZnVol = createDeadZone("w");
-					deadZnVol.setPosition( 0.0, 0.0,  (SVTConstants.ACTIVESENLEN + SVTConstants.DEADZNLEN + VOLSPACER)/2*0.1 );
+					deadZnVol.setPosition( 0.0, 0.0,  (SVTConstants.ACTIVESENLEN + SVTConstants.DEADZNLEN + VOLSPACER)/2.0*0.1 );
 					break;
 				}
 				
@@ -598,7 +598,7 @@ public class SVTVolumeFactory
 	 */
 	public Geant4Basic createSensorActive( )
 	{	
-		return new G4Box( "sensorActive", SVTConstants.ACTIVESENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.ACTIVESENLEN*0.1 );
+		return new G4Box( "sensorActive", SVTConstants.ACTIVESENWID/2.0*0.1, SVTConstants.SILICONTHK/2.0*0.1, SVTConstants.ACTIVESENLEN/2.0*0.1 );
 	}
 	
 	
@@ -616,10 +616,10 @@ public class SVTVolumeFactory
 		switch( aType )
 		{
 		case "l":
-			deadZnVol = new G4Box( "deadZoneLen", SVTConstants.DEADZNWID*0.1, SVTConstants.SILICONTHK*0.1, (SVTConstants.ACTIVESENLEN + 2*SVTConstants.DEADZNLEN)*0.1 );
+			deadZnVol = new G4Box( "deadZoneLen", SVTConstants.DEADZNWID/2.0*0.1, SVTConstants.SILICONTHK/2.0*0.1, (SVTConstants.ACTIVESENLEN + 2*SVTConstants.DEADZNLEN)/2.0*0.1 );
 			break;
 		case "w":
-			deadZnVol = new G4Box( "deadZoneWid", SVTConstants.ACTIVESENWID*0.1, SVTConstants.SILICONTHK*0.1, SVTConstants.DEADZNLEN*0.1 );
+			deadZnVol = new G4Box( "deadZoneWid", SVTConstants.ACTIVESENWID/2.0*0.1, SVTConstants.SILICONTHK/2.0*0.1, SVTConstants.DEADZNLEN/2.0*0.1 );
 			break;
 		default:
 			throw new IllegalArgumentException("unknown dead zone type: "+ aType );
