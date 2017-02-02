@@ -29,7 +29,7 @@ public final class RICHGeant4Factory extends Geant4Factory {
                          RichBox_phi = 180,
                          RichBox_psi = 90,
                          RichBox_y_offset = 284.31,
-            
+            /*
                          RichBox_dz = 634.81,
                          RichBox_dz_new = RichBox_dz*Math.sin(Math.toRadians(65)),
                          RichBox_dy1 = 1882.49,
@@ -42,7 +42,7 @@ public final class RICHGeant4Factory extends Geant4Factory {
                          RichBox_dx4 = 2090.22,
                          RichBox_th = -25,
                          RichBox_ph = 90, 
-            
+            */
                          PMTCase_dx = 26, 
                          PMTCase_dy = 26,       //dimensions of PMT
                          PMTCase_dz = 13.5,
@@ -50,9 +50,12 @@ public final class RICHGeant4Factory extends Geant4Factory {
                          PMTSeparation = 1,
                          PMTFirstRow_y = -1931.23,  //Position of PMT in box
                          PMTFirstRow_z = 474.10;
+                         //PMTFirstRow_y = 0,
+                         //PMTFirstRow_z = 0;
                             
     private double PMTCase_x =0,
                    PMTCase_y = PMTFirstRow_y;
+                   
     
     private final double PMTCase_z =PMTFirstRow_z;
 
@@ -84,6 +87,10 @@ public final class RICHGeant4Factory extends Geant4Factory {
             //Rich_Box.rotate("zxy", rotation.x,rotation.y,rotation.z);  //rotation.x is first componenent (phi), etc.
             //Rich_Box.scale(Length.mm/Length.cm);
             //Rich_Box.setMother(motherVolume);
+            System.out.println(sector);
+            System.out.println(rotation.x);
+            System.out.println(rotation.y);
+            
             
             
             
@@ -92,8 +99,10 @@ public final class RICHGeant4Factory extends Geant4Factory {
                 
 		//define the y position of the volume
                 PMTCase_y=PMTFirstRow_y;
+                
                 PMTCase_y += (PMTSeparation+2.0*PMTCase_dy)*irow;
-                        
+                //System.out.println(PMTCase_y);
+                
                 //define number of PMTs in this row
 		int nPMTInARow = 6 + irow;
                         
@@ -108,8 +117,9 @@ public final class RICHGeant4Factory extends Geant4Factory {
                     //build the PMT
                     G4Box PMT = PMTBuilder.buildPMTVolume(nPMTs,irow,PMTCase_dx, PMTCase_dy, PMTCase_dz);
                     PMT.setMother(motherVolume);
-                    PMT.translate(PMTCase_x+position.x, PMTCase_y+position.y, PMTCase_z+position.z);
-                    PMT.rotate("zyx", rotation.x, rotation.y, rotation.z);
+                    PMT.translate(PMTCase_x, PMTCase_y, PMTCase_z);
+                    PMT.rotate("xzy", rotation.x, rotation.y, rotation.z);
+                    PMT.translate(position.x,position.y, position.z);
                     PMT.scale(Length.mm/Length.cm);
                 }
             }
@@ -123,10 +133,8 @@ public final class RICHGeant4Factory extends Geant4Factory {
             double phi = (sector-1)*60;
             double RichBox_y_real = RichBox_y + RichBox_y_offset;
             double r = Math.sqrt(RichBox_x * RichBox_x + RichBox_y_real*RichBox_y_real);
-            //double x= r*Math.cos(Math.toRadians(phi));
-            double x=RichBox_x;
-            double y = RichBox_y-RichBox_y_offset;
-            //double y = r*Math.sin(Math.toRadians(phi));
+            double x= r*Math.cos(Math.toRadians(phi));
+            double y = r*Math.sin(Math.toRadians(phi));
             double z = RichBox_z;
             
             Vector3d position = new Vector3d(x,y,z);
@@ -142,7 +150,7 @@ public final class RICHGeant4Factory extends Geant4Factory {
             double psi = RichBox_psi + (sector-1)*60;
             //double psi = RichBox_psi +(sector-1)*60;
             
-            Vector3d rotation = new Vector3d(Math.toRadians(zrot),Math.toRadians(tilt),0);
+            Vector3d rotation = new Vector3d(Math.toRadians(tilt),Math.toRadians(zrot),0);
             return rotation;
         }
         
