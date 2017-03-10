@@ -59,9 +59,6 @@ public final class RICHGeant4Factory extends Geant4Factory {
             Vector3d position = RichBoxPos.getpos(sector, RichBox_x, RichBox_y, RichBox_y_offset, RichBox_z);
             //calculate the rotation of the box
             Vector3d rotation = RichBoxPos.getrot(sector,RichBox_the);
-            System.out.println(sector);
-            System.out.println(rotation.x);
-            System.out.println(rotation.y);
             
             //place the PMTs in the trapezoidal box
             for(int irow=0; irow<PMT_rows ; irow++){
