@@ -22,38 +22,21 @@ public final class RICHGeant4Factory extends Geant4Factory {
     private final int PMT_rows = 23, sector = 4;
     private int nPMTs = 0;
     
-    private final double RichBox_x = 0,
-                         RichBox_y = 1706.145,
-                         RichBox_z = 5705.13,
+    private final double RichBox_x = 0 * Length.mm,
+                         RichBox_y = 1706.145* Length.mm,
+                         RichBox_z = 5705.13* Length.mm,
                          RichBox_the = 25,    // position of box
-                         RichBox_phi = 180,
-                         RichBox_psi = 90,
-                         RichBox_y_offset = 284.31,
-            /*
-                         RichBox_dz = 634.81,
-                         RichBox_dz_new = RichBox_dz*Math.sin(Math.toRadians(65)),
-                         RichBox_dy1 = 1882.49,
-                         RichBox_dy2 = 1882.49,
-                         RichBox_alp1 = 0,
-                         RichBox_alp2 = 0,
-                         RichBox_dx1 = 135,      //dimensions of box
-                         RichBox_dx2 = 2090.22,
-                         RichBox_dx3 = 135,
-                         RichBox_dx4 = 2090.22,
-                         RichBox_th = -25,
-                         RichBox_ph = 90, 
-            */
-                         PMTCase_dx = 26, 
-                         PMTCase_dy = 26,       //dimensions of PMT
-                         PMTCase_dz = 13.5,
+                         RichBox_y_offset = 284.31* Length.mm,
+
+                         PMTCase_dx = 26* Length.mm, 
+                         PMTCase_dy = 26* Length.mm,       //dimensions of PMT
+                         PMTCase_dz = 13.5* Length.mm,
                          
-                         PMTSeparation = 1,
-                         PMTFirstRow_y = -1931.23,  //Position of PMT in box
-                         PMTFirstRow_z = 474.10;
-                         //PMTFirstRow_y = 0,
-                         //PMTFirstRow_z = 0;
+                         PMTSeparation = 1* Length.mm,
+                         PMTFirstRow_y = -1931.23* Length.mm,  //Position of PMT in box
+                         PMTFirstRow_z = 474.10* Length.mm;
                             
-    private double PMTCase_x =0,
+    private double PMTCase_x =0 * Length.mm,
                    PMTCase_y = PMTFirstRow_y;
                    
     
@@ -72,27 +55,13 @@ public final class RICHGeant4Factory extends Geant4Factory {
                 component.setMother(motherVolume);
             }
             
-            
-            //build the rich trapezoidal box
-            //G4Trap Rich_Box = new G4Trap("Rich_Box",RichBox_dz_new,RichBox_th,RichBox_ph,
-            //                             RichBox_dy1,RichBox_dx1,RichBox_dx2,
-             //                            RichBox_alp1,RichBox_dy2,RichBox_dx3,
-            //                             RichBox_dx4, RichBox_alp2);
-            
-            //calculate the position                
+            //calculate the position of the rich box where PMTs will be placed              
             Vector3d position = RichBoxPos.getpos(sector, RichBox_x, RichBox_y, RichBox_y_offset, RichBox_z);
-            //Rich_Box.translate(position);
-            //calculate the rotation
-            Vector3d rotation = RichBoxPos.getrot(sector,RichBox_the,RichBox_phi,RichBox_psi);
-            //Rich_Box.rotate("zxy", rotation.x,rotation.y,rotation.z);  //rotation.x is first componenent (phi), etc.
-            //Rich_Box.scale(Length.mm/Length.cm);
-            //Rich_Box.setMother(motherVolume);
+            //calculate the rotation of the box
+            Vector3d rotation = RichBoxPos.getrot(sector,RichBox_the);
             System.out.println(sector);
             System.out.println(rotation.x);
             System.out.println(rotation.y);
-            
-            
-            
             
             //place the PMTs in the trapezoidal box
             for(int irow=0; irow<PMT_rows ; irow++){
@@ -120,7 +89,6 @@ public final class RICHGeant4Factory extends Geant4Factory {
                     PMT.translate(PMTCase_x, PMTCase_y, PMTCase_z);
                     PMT.rotate("xzy", rotation.x, rotation.y, rotation.z);
                     PMT.translate(position.x,position.y, position.z);
-                    PMT.scale(Length.mm/Length.cm);
                 }
             }
         
@@ -141,14 +109,9 @@ public final class RICHGeant4Factory extends Geant4Factory {
             return position;
         }
         
-        static Vector3d getrot(int sector, double RichBox_the, double RichBox_phi, double RichBox_psi){
+        static Vector3d getrot(int sector, double RichBox_the){
             double tilt = RichBox_the;
             double zrot = -(sector -1)*60 + 90;
-            
-            double phi = RichBox_phi;
-            double the = RichBox_the * (-1)*(sector+1);
-            double psi = RichBox_psi + (sector-1)*60;
-            //double psi = RichBox_psi +(sector-1)*60;
             
             Vector3d rotation = new Vector3d(Math.toRadians(tilt),Math.toRadians(zrot),0);
             return rotation;
@@ -164,7 +127,7 @@ public final class RICHGeant4Factory extends Geant4Factory {
             
             G4Box PMTVolume = new G4Box(String.format("PMTRow_%d_n%d", irow,nPMTs), PMTCase_dx, PMTCase_dy, PMTCase_dz);
             
-            double PMTCase_width = 1.0;
+            double PMTCase_width = 1.0 * Length.mm;
             
             //Aluminum
             G4Box AluminumLeft = new G4Box(String.format("AlLeft_%d_n%d", irow, nPMTs), PMTCase_width/2,PMTCase_dy-PMTCase_width,PMTCase_dz);
@@ -185,7 +148,7 @@ public final class RICHGeant4Factory extends Geant4Factory {
            
             
             //window
-            double PMTWindow_dz = 0.75,
+            double PMTWindow_dz = 0.75 * Length.mm,
                    PMTWindow_dx = PMTCase_dx - PMTCase_width,
                    PMTWindow_dy = PMTCase_dy - PMTCase_width; 
             double PMTWindow_z = -PMTCase_dz + PMTWindow_dz;
@@ -195,9 +158,9 @@ public final class RICHGeant4Factory extends Geant4Factory {
             
             
             //photocathode
-            double PMTPhotocathode_dx = 24.5,
-                   PMTPhotocathode_dy = 24.5,
-                   PMTPhotocathode_dz = 0.5;
+            double PMTPhotocathode_dx = 24.5 * Length.mm,
+                   PMTPhotocathode_dy = 24.5 * Length.mm,
+                   PMTPhotocathode_dz = 0.5 * Length.mm;
             double PMTPhotocathode_z = -PMTCase_dz + 2*PMTWindow_dz + PMTPhotocathode_dz;
             G4Box Photocathode = new G4Box(String.format("Photocathode_%d_n%d", irow, nPMTs),PMTPhotocathode_dx,PMTPhotocathode_dy,PMTPhotocathode_dz);
             Photocathode.translate(0,0,PMTPhotocathode_z);
@@ -206,8 +169,8 @@ public final class RICHGeant4Factory extends Geant4Factory {
             //socket
             double PMTSocket_dx = PMTCase_dx - PMTCase_width,
                     PMTSocket_dy = PMTCase_dy - PMTCase_width,
-                    PMTSocket_dz = 1.35;
-            double PMTSocketZShift = 1.0;
+                    PMTSocket_dz = 1.35 * Length.mm;
+            double PMTSocketZShift = 1.0 * Length.mm;
             double PMTSocket_z = PMTCase_dz - PMTSocket_dz;
             G4Box Socket = new G4Box(String.format("Socket_%d_n%d", irow, nPMTs),PMTSocket_dx,PMTSocket_dy,PMTSocket_dz);
             Socket.translate(0,0,PMTSocket_z);
