@@ -135,7 +135,6 @@ public final class RICHGeant4Factory extends Geant4Factory {
         Window.setMother(MAPMTVolume);
 
         //photocathode
-        double PMTPhotocathode_z = -MAPMT_dz + 2 * MAPMTWindow_thickness / 2 + MAPMTPhotocathode_thickness / 2 + offset;
         G4Box Photocathode = new G4Box("Photocathode_" + mapmtName, MAPMTPhotocathode_side / 2, MAPMTPhotocathode_side / 2, MAPMTPhotocathode_thickness / 2);
         Photocathode.translate(0, 0, -MAPMT_dz + MAPMTWindow_thickness + MAPMTPhotocathode_thickness / 2);
         Photocathode.setMother(MAPMTVolume);
