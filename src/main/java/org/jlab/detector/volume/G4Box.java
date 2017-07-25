@@ -17,14 +17,11 @@ import org.jlab.geometry.prim.Line3d;
  * @author kenjo
  */
 public class G4Box extends Geant4Basic {
-	
-
     public G4Box(String name, double sizex, double sizey, double sizez) {
         super(new Box(sizex, sizey, sizez));
         setName(name);
         setType("Box");
         setDimensions(Length.value(sizex), Length.value(sizey), Length.value(sizez));
-
     }
     
     public double getXHalfLength() {
