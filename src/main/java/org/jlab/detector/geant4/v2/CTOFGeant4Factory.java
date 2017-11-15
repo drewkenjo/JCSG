@@ -39,7 +39,7 @@ public final class CTOFGeant4Factory extends Geant4Factory {
 
                 if (name.equals("sc")) {
                     component.makeSensitive();
-                    component.setId(CTOFID, iscint);
+                    component.setId(CTOFID, (iscint>13) ? iscint-13 : iscint+35);
                 }
             }
         }
